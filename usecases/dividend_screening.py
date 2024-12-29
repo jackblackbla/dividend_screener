@@ -1,8 +1,8 @@
-from typing import List
+from typing import List, Optional
 from dataclasses import dataclass
 from repositories.dividend_info_repository import DividendInfoRepository
 from repositories.financial_statement_repository import FinancialStatementRepository
-from exceptions import DividendScreeningError
+from exceptions import DividendScreeningError, NoPriceDataError
 
 @dataclass
 class ScreeningCriteria:
@@ -37,7 +37,8 @@ class DividendScreeningUseCase:
                 dividend_info = self.dividend_repo.get_dividend_info(stock_code, criteria.years_to_consider)
                 dividend_count = self._calculate_dividend_count(dividend_info)
                 dividend_yield = self._calculate_average_dividend_yield(dividend_info)
-
+                
+                # 주가 정보가 없는 경우 배당률이 0이 되므로 meets_criteria는 False
                 meets_criteria = (
                     dividend_yield >= criteria.min_dividend_yield and
                     dividend_count >= criteria.min_dividend_count
@@ -58,8 +59,33 @@ class DividendScreeningUseCase:
     def _calculate_dividend_count(self, dividend_info: List) -> int:
         return len(dividend_info)
 
+    def _get_current_price(self, stock_code: str) -> float:
+        """주식의 현재 가격을 가져옵니다.
+        
+        Args:
+            stock_code: 종목 코드
+            
+        Returns:
+            현재 주가
+            
+        Raises:
+            NoPriceDataError: 주가 정보를 가져올 수 없는 경우
+        """
+        # TODO: 실제 주가 데이터 소스와 연동 필요
+        raise NoPriceDataError(f"No price data available for {stock_code}")
+
     def _calculate_average_dividend_yield(self, dividend_info: List) -> float:
         if not dividend_info:
             return 0.0
-        total_yield = sum(info.dividend_yield for info in dividend_info)
-        return total_yield / len(dividend_info)
+            
+        try:
+            current_price = self._get_current_price(dividend_info[0].stock_code)
+            if current_price <= 0:
+                return 0.0
+                
+            total_dividend = sum(info.dividend_per_share for info in dividend_info)
+            average_dividend = total_dividend / len(dividend_info)
+            return (average_dividend / current_price) * 100
+            
+        except NoPriceDataError:
+            return 0.0

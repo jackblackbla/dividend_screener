@@ -2,7 +2,7 @@ import requests
 from typing import List, Optional
 from datetime import datetime
 from dataclasses import dataclass
-from exceptions import OpenDartApiError
+from exceptions import OpenDartApiError, CorpCodeFetchError
 
 @dataclass
 class FinancialStatement:
@@ -111,3 +111,58 @@ class OpenDartApiAdapter:
 
         except requests.exceptions.RequestException as e:
             raise OpenDartApiError(f"API request failed: {str(e)}")
+
+    def get_dividend_detail_info(self, rcept_no: str) -> dict:
+        url = f"{self.base_url}/document.json"
+        params = {
+            "crtfc_key": self.api_key,
+            "rcept_no": rcept_no
+        }
+
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            if data["status"] != "000":
+                raise OpenDartApiError(f"DART API error: {data['message']}")
+
+            ex_dividend_date = None
+            if data.get("ex_dividend_date"):
+                ex_dividend_date = datetime.strptime(data["ex_dividend_date"], '%Y-%m-%d')
+
+            return {
+                "year": int(data["rcept_dt"][:4]),
+                "dividend_per_share": float(data["cash_dividend"]),
+                "dividend_yield": float(data["dividend_yield"]),
+                "ex_dividend_date": ex_dividend_date
+            }
+
+        except requests.exceptions.RequestException as e:
+            raise OpenDartApiError(f"API request failed: {str(e)}")
+
+    def get_corp_code(self, stock_code: str) -> str:
+        """
+        종목 코드를 사용하여 B의 API를 호출하고, 고유번호(corp_code)를 반환합니다.
+
+        Args:
+            stock_code: 종목 코드
+
+        Returns:
+            고유번호(corp_code)
+
+        Raises:
+            CorpCodeFetchError: API 호출 실패 시
+        """
+        try:
+            response = requests.get(f"http://localhost:8001/api/v1/stock?code={stock_code}")
+            response.raise_for_status()  # HTTP 오류 발생 시 예외 발생
+            data = response.json()
+            if data["status"] != "success":
+                raise ValueError(f"API returned error: {data.get('message')}")
+            corp_code = data["data"]["corp_code"]
+            if not corp_code:
+                raise ValueError("corp_code not found in response")
+            return corp_code
+        except Exception as e:
+            raise CorpCodeFetchError(f"Failed to fetch corp_code for {stock_code}: {e}")

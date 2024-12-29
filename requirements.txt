@@ -1,7 +1,7 @@
-sqlalchemy==2.0.23
-alembic==1.13.1
-pymysql==1.1.0
-pytest==7.4.0
-fastapi==0.104.1
-uvicorn==0.24.0.post1
-python-dotenv==1.0.0
+fastapi>=0.68.0
+uvicorn>=0.15.0
+pydantic>=1.8.0
+sqlalchemy>=1.4.0
+requests>=2.26.0
+pytest>=6.2.0
+mysqlclient>=2.1.0

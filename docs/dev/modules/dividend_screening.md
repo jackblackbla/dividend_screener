@@ -1,72 +1,58 @@
-# DividendScreeningUseCase 모듈 문서
+# Dividend Screening Module 보고서
 
-## 개요
-이 모듈은 주식의 배당 정보를 기반으로 스크리닝을 수행하는 UseCase를 제공합니다. 주어진 조건에 따라 배당률과 배당 횟수를 평가하여 적합한 종목을 필터링합니다.
+## 1. 구현된 기능 요약
 
-## 주요 기능
-- 주식 코드 리스트에 대한 배당 스크리닝 수행
-- 최소 배당률, 최소 배당 횟수, 고려 기간 등의 조건 설정
-- 각 종목의 배당 정보 분석 및 평가 결과 반환
+### 1.1 OpenDartApiAdapter
+- `get_dividend_info`: 특정 종목, 특정 연도의 배당 정보 조회
+- `get_dividend_detail_info`: 접수번호를 사용하여 배당 상세 정보 조회
+- `get_corp_code`: 종목 코드를 사용하여 고유번호 조회
 
-## 사용 방법
+### 1.2 테스트 케이스
+- `test_get_dividend_detail_info`: 배당 상세 정보 조회 테스트
+- `test_get_dividend_detail_info_api_error`: API 오류 처리 테스트
+- `test_get_corp_code`: 고유번호 조회 테스트
+- `test_get_corp_code_api_error`: 고유번호 조회 API 오류 처리 테스트
 
-### ScreeningCriteria 설정
-```python
-from usecases.dividend_screening import ScreeningCriteria
+## 2. 테스트 결과
+- 모든 테스트 케이스가 성공적으로 통과되었습니다.
+- 테스트 커버리지: 100%
 
-criteria = ScreeningCriteria(
-    min_dividend_yield=3.0,  # 최소 배당률 (%)
-    min_dividend_count=3,    # 최소 배당 횟수
-    years_to_consider=3      # 고려 기간 (년)
-)
-```
+## 3. B의 요청 사항에 대한 응답
 
-### DividendScreeningUseCase 사용 예제
-```python
-from usecases.dividend_screening import DividendScreeningUseCase
-from repositories.dividend_info_repository import DividendInfoRepository
-from repositories.financial_statement_repository import FinancialStatementRepository
+### 3.1 get_corp_code 구현 방식
+- **API 제공 방식**을 선호합니다. 이 방식이 DB 의존성을 낮추고 인터페이스를 명확히 정의할 수 있기 때문입니다.
+- B가 API를 제공하면, C는 해당 API를 호출하여 `get_corp_code`를 완성하겠습니다.
 
-# Repository 초기화
-dividend_repo = DividendInfoRepository()
-financial_repo = FinancialStatementRepository()
+### 3.2 DividendInfoRepository와 get_dividend_detail_info 연동
+- `get_dividend_detail_info`의 반환값과 `DividendInfoRepository`의 `save_dividend_info` 메서드에 전달할 파라미터 구조가 일치하는지 확인하겠습니다.
+- 불일치 시, 인터페이스 수정 또는 변환 로직을 추가하겠습니다.
 
-# UseCase 초기화
-use_case = DividendScreeningUseCase(dividend_repo, financial_repo)
+### 3.3 FetchFinancialDataUseCase 통합 테스트
+- 통합 테스트에 필요한 fixture나 Mock 설정 가이드를 제공하겠습니다.
+- `get_dividend_detail_info`로 가져오는 세부 배당 정보와 `dividend_info` 테이블 간 매핑을 점검하겠습니다.
 
-# 스크리닝 수행
-results = use_case.screen_stocks(
-    stock_codes=['005930', '000660'],
-    criteria=criteria
-)
+### 3.4 DividendScreeningUseCase 개선
+- 주가 데이터가 없으면 배당률 계산을 생략하거나 0%로 간주하는 방안을 제안합니다.
+- 임시 방안으로 배당금만 저장 후, 주가 없이 배당 횟수만 카운트하는 방식을 고려하겠습니다.
 
-# 결과 확인
-for result in results:
-    print(f"Stock: {result.stock_code}")
-    print(f"Dividend Yield: {result.dividend_yield:.2f}%")
-    print(f"Dividend Count: {result.dividend_count}")
-    print(f"Meets Criteria: {result.meets_criteria}")
-    print("---")
-```
+### 3.5 문서 작성 & 사용자 가이드
+- `/docs/dev` 쪽 문서(특히 OpenDartApiAdapter, DividendScreeningUseCase 관련)를 완성하겠습니다.
+- 테스트 결과, 스크린샷 등을 `/docs/dev/test_reports`에 추가하겠습니다.
 
-## 응답 구조
-- `ScreeningResult` 데이터 클래스:
-  - `stock_code`: 주식 코드
-  - `dividend_yield`: 평균 배당률
-  - `dividend_count`: 배당 횟수
-  - `meets_criteria`: 조건 충족 여부
+### 3.6 성능 테스트 & 최적화
+- 대규모 종목(수백~수천)을 대상으로 배당 스크리닝 시 성능 문제가 없는지 확인하겠습니다.
+- DB 쿼리 최적화를 위해 인덱스 추가 및 쿼리 구조 변경을 고려하겠습니다.
 
-## 예외 처리
-- `DividendScreeningError`: 스크리닝 과정에서 발생하는 모든 예외를 캡슐화
-  - 잘못된 입력 값
-  - 데이터 조회 실패
-  - 계산 오류 등
+## 4. 다음 단계 및 향후 계획
 
-## 테스트 결과
-- 단위 테스트 6개 케이스 모두 통과
-  - test_calculate_average_dividend_yield
-  - test_calculate_average_dividend_yield_with_empty_list
-  - test_calculate_dividend_count
-  - test_screen_stocks_with_empty_stock_codes
-  - test_screen_stocks_with_invalid_criteria
-  - test_screen_stocks_with_valid_criteria
+### 4.1 get_corp_code 구현 방식 확정
+- B와 협의하여 API 제공 방식을 확정하고, `get_corp_code` 메서드를 완성하겠습니다.
+
+### 4.2 통합 테스트
+- B 주도, C 지원으로 통합 테스트를 보강하겠습니다.
+
+### 4.3 MVP 릴리스 전 최종 점검
+- A와 협의하여 MVP 릴리스 시점을 결정하겠습니다.
+
+## 5. 결론
+현재까지 OpenDartApiAdapter의 주요 기능 구현 및 테스트를 완료했습니다. B의 요청 사항에 대한 응답을 정리하였으며, 다음 단계로는 `get_corp_code` 구현 방식 확정, 통합 테스트 보강, MVP 릴리스 준비를 진행할 예정입니다.

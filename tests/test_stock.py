@@ -6,6 +6,8 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from schema import Stock, Base
+from adapters.opendart_adapter import OpenDartApiAdapter
+from exceptions import CorpCodeFetchError
 
 @pytest.fixture
 def db_session():
@@ -23,3 +25,18 @@ def test_stock_creation(db_session):
     
     retrieved_stock = db_session.query(Stock).filter_by(code="005930").first()
     assert retrieved_stock.name == "삼성전자"
+
+def test_get_corp_code_success():
+    adapter = OpenDartApiAdapter(api_key="test_key")
+    corp_code = adapter.get_corp_code("005930")
+    assert corp_code == "00126380"
+
+def test_get_corp_code_api_error():
+    adapter = OpenDartApiAdapter(api_key="test_key")
+    with pytest.raises(CorpCodeFetchError):
+        adapter.get_corp_code("invalid_code")
+
+def test_get_corp_code_not_found():
+    adapter = OpenDartApiAdapter(api_key="test_key")
+    with pytest.raises(CorpCodeFetchError):
+        adapter.get_corp_code("999999")

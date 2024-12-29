@@ -1,7 +1,15 @@
 class OpenDartApiError(Exception):
-    """Open DART API 관련 오류를 나타내는 예외 클래스"""
+    """OpenDart API 호출 중 발생한 오류를 나타냅니다."""
+    pass
+
+class CorpCodeFetchError(Exception):
+    """고유번호(corp_code) 조회 중 발생한 오류를 나타냅니다."""
     pass
 
 class DividendScreeningError(Exception):
-    """배당 스크리닝 관련 오류를 나타내는 예외 클래스"""
+    """배당 스크리닝 중 발생한 오류를 나타냅니다."""
+    pass
+
+class NoPriceDataError(Exception):
+    """주가 데이터를 가져올 수 없을 때 발생하는 오류를 나타냅니다."""
     pass
