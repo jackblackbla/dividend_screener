@@ -116,7 +116,16 @@ class DividendScreeningUseCase:
                 excluded.append(stock_code)
                 
         return {
-            "included": [result.__dict__ for result in included],
+            "included": [{
+                "stock_code": result.stock_code,
+                "stock_name": result.stock_name,
+                "dividend_per_share": result.dividend_per_share,
+                "dividend_count": result.dividend_count,
+                "consecutive_years": result.consecutive_years,
+                "dividend_growth": result.dividend_growth,
+                "dividend_yield": result.dividend_yield,
+                "meets_criteria": result.meets_criteria
+            } for result in included],
             "excluded": excluded,
             "criteria": criteria.__dict__,
             "timestamp": datetime.now().isoformat()
