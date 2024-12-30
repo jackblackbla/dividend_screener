@@ -29,3 +29,18 @@ class StockPriceRepository:
             .order_by(StockPrice.trade_date.desc())\
             .limit(days)\
             .all()
+
+    def get_latest_trade_date(self) -> str:
+        """전체 주가 데이터 중 가장 최근 거래일을 반환합니다."""
+        latest_date = self.session.query(
+            func.max(StockPrice.trade_date)
+        ).scalar()
+        return latest_date.strftime('%Y-%m-%d') if latest_date else None
+
+    def get_prices_by_date(self, trade_date: str) -> dict:
+        """특정 거래일의 모든 종목 주가를 {stock_id: close_price} 형태로 반환합니다."""
+        prices = self.session.query(
+            StockPrice.stock_id,
+            StockPrice.close_price
+        ).filter_by(trade_date=trade_date).all()
+        return {stock_id: close_price for stock_id, close_price in prices}

@@ -4,7 +4,9 @@ from sqlalchemy.orm import sessionmaker
 from adapters.opendart_adapter import OpenDartApiAdapter
 from repositories.financial_statement_repository import FinancialStatementRepository
 from repositories.dividend_info_repository import DividendInfoRepository
+from repositories.stock_price_repository import StockPriceRepository
 from usecases.fetch_financial_data import FetchFinancialDataUseCase
+from usecases.dividend_screening import DividendScreeningUseCase
 from schema import Base
 import os
 
@@ -30,6 +32,27 @@ async def fetch_financials(stock_code: str, start_year: int, end_year: int):
         result = usecase.execute(stock_code, start_year, end_year)
         
         return {"message": "success", "result": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db_session.close()
+
+@app.get("/screen/high-yield")
+async def screen_high_yield_stocks(min_yield: float = 3.0, limit: int = 5):
+    db_session = SessionLocal()
+    try:
+        div_repo = DividendInfoRepository(db_session)
+        stock_price_repo = StockPriceRepository(db_session)
+        
+        usecase = DividendScreeningUseCase(
+            dividend_repo=div_repo,
+            financial_repo=None,
+            stock_price_repo=stock_price_repo,
+            session=db_session
+        )
+        
+        result = usecase.screen_high_yield_stocks(min_yield)
+        return {"message": "success", "result": result[:limit]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:

@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from schema import DividendInfo, Stock
 
 class DividendInfoRepository:
@@ -31,3 +32,22 @@ class DividendInfoRepository:
             .order_by(DividendInfo.year.desc())\
             .limit(years)\
             .all()
+
+    def get_high_yield_stocks(self, min_yield: float) -> list:
+        """최소 배당률 이상인 종목들의 배당 정보를 조회합니다."""
+        latest_date = self.session.query(
+            func.max(DividendInfo.year)
+        ).scalar()
+
+        if not latest_date:
+            return []
+
+        return self.session.query(
+            Stock.code,
+            DividendInfo.year,
+            DividendInfo.dividend_per_share,
+            DividendInfo.dividend_yield
+        ).join(Stock, Stock.id == DividendInfo.stock_id)\
+         .filter(DividendInfo.year == latest_date)\
+         .filter(DividendInfo.dividend_yield >= min_yield)\
+         .all()

@@ -7,11 +7,19 @@ from sqlalchemy.orm import sessionmaker
 from usecases.dividend_screening import DividendScreeningUseCase, ScreeningCriteria
 from repositories.dividend_info_repository import DividendInfoRepository
 from repositories.financial_statement_repository import FinancialStatementRepository
+from repositories.stock_price_repository import StockPriceRepository
 import logging
 
 # 로깅 설정
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+# 콘솔 핸들러 추가
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter("[%(asctime)s] %(levelname)s - %(name)s - %(message)s")
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 app = FastAPI()
 
@@ -70,7 +78,8 @@ class ScreeningResponse(BaseModel):
 
 @app.get("/api/v1/screen", response_model=ScreeningResponse)
 async def screen_stocks(
-    min_dividend: float = Query(1000, description="최소 배당금"),
+    min_dividend: float = Query(0, description="최소 배당금"),
+    min_yield: float = Query(0.0, description="최소 배당률"),
     min_count: int = Query(3, description="최소 배당 횟수"),
     years: int = Query(5, description="고려할 연도 수"),
     min_consecutive_years: Optional[int] = Query(None, description="최소 연속 배당 연도 수"),
@@ -86,8 +95,9 @@ async def screen_stocks(
         dividend_repo = DividendInfoRepository(db)
         financial_repo = FinancialStatementRepository(db)
         
-        # UseCase 초기화
-        use_case = DividendScreeningUseCase(dividend_repo, financial_repo)
+        # Repository 및 UseCase 초기화
+        stock_price_repo = StockPriceRepository(db)
+        use_case = DividendScreeningUseCase(dividend_repo, financial_repo, stock_price_repo, db)
         
         # 모든 종목 코드 가져오기
         stock_codes = [row[0] for row in db.execute(text("SELECT code FROM stocks")).fetchall()]
@@ -95,6 +105,7 @@ async def screen_stocks(
         # 스크리닝 조건 설정
         criteria = ScreeningCriteria(
             min_dividend=min_dividend,
+            min_yield=min_yield,
             min_dividend_count=min_count,
             years_to_consider=years,
             min_consecutive_years=min_consecutive_years,
@@ -109,6 +120,7 @@ async def screen_stocks(
             data=result["included"],
             criteria={
                 "min_dividend": min_dividend,
+                "min_yield": min_yield,
                 "min_count": min_count,
                 "years": years,
                 "min_consecutive_years": min_consecutive_years,

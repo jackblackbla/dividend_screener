@@ -32,8 +32,16 @@
 - `get_dividend_detail_info`로 가져오는 세부 배당 정보와 `dividend_info` 테이블 간 매핑을 점검하겠습니다.
 
 ### 3.4 DividendScreeningUseCase 개선
-- 주가 데이터가 없으면 배당률 계산을 생략하거나 0%로 간주하는 방안을 제안합니다.
-- 임시 방안으로 배당금만 저장 후, 주가 없이 배당 횟수만 카운트하는 방식을 고려하겠습니다.
+- **최근 거래일 기반 배당률 계산 방식**:
+  1. 전체 주가 데이터 중 가장 최근 거래일 조회
+  2. 해당 날짜의 모든 종목 주가를 {stock_id: close_price} 형태로 매핑
+  3. 배당률 계산: (dividend_per_share / close_price) * 100
+  4. 주가 데이터가 없는 경우 배당률을 0%로 처리
+
+- **에지 케이스 처리**:
+  - 주가가 0인 경우: 배당률 0% 처리
+  - 배당금이 0인 경우: 배당률 0% 처리
+  - 주가 데이터가 없는 경우: 배당률 0% 처리
 
 ### 3.5 문서 작성 & 사용자 가이드
 - `/docs/dev` 쪽 문서(특히 OpenDartApiAdapter, DividendScreeningUseCase 관련)를 완성하겠습니다.
@@ -55,8 +63,13 @@
     {
       "stock_code": "005930",
       "stock_name": "삼성전자",
-      "dividend_yield": 3.2,
-      "consecutive_years": 5
+      "dividend_per_share": 1416.0,
+      "close_price": 70000.0,
+      "dividend_yield": 2.02,
+      "dividend_count": 5,
+      "consecutive_years": 5,
+      "dividend_growth": 10.5,
+      "meets_criteria": true
     }
   ],
   "message": null
