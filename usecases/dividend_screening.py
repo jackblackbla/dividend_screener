@@ -1,20 +1,29 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from dataclasses import dataclass
 from repositories.dividend_info_repository import DividendInfoRepository
 from repositories.financial_statement_repository import FinancialStatementRepository
 from exceptions import DividendScreeningError, NoPriceDataError
+import logging
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class ScreeningCriteria:
-    min_dividend_yield: float
-    min_dividend_count: int
-    years_to_consider: int
+    min_dividend: float  # 최소 배당금
+    min_dividend_count: int  # 최소 배당 횟수
+    years_to_consider: int  # 고려할 연도 수
+    min_consecutive_years: Optional[int] = None  # 연속 배당 연도 수
+    min_dividend_growth: Optional[float] = None  # 최소 배당 성장률
 
 @dataclass
 class ScreeningResult:
     stock_code: str
-    dividend_yield: float
+    stock_name: str
+    dividend_per_share: float
     dividend_count: int
+    consecutive_years: int
+    dividend_growth: float
     meets_criteria: bool
 
 class DividendScreeningUseCase:
@@ -24,7 +33,7 @@ class DividendScreeningUseCase:
         self.dividend_repo = dividend_repo
         self.financial_repo = financial_repo
 
-    def screen_stocks(self, stock_codes: List[str], criteria: ScreeningCriteria) -> dict:
+    def screen_stocks(self, stock_codes: List[str], criteria: ScreeningCriteria) -> Dict:
         if not stock_codes:
             raise DividendScreeningError("Stock codes list cannot be empty")
 
@@ -33,63 +42,92 @@ class DividendScreeningUseCase:
 
         included = []
         excluded = []
+        
         for stock_code in stock_codes:
             try:
-                dividend_info = self.dividend_repo.get_dividend_info(stock_code, criteria.years_to_consider)
-                dividend_count = self._calculate_dividend_count(dividend_info)
-                dividend_yield = self._calculate_average_dividend_yield(dividend_info)
-                
-                meets_criteria = (
-                    dividend_yield >= criteria.min_dividend_yield and
-                    dividend_count >= criteria.min_dividend_count
+                # 배당 정보 조회
+                dividend_info = self.dividend_repo.get_dividend_info(
+                    stock_code, 
+                    criteria.years_to_consider
                 )
-
-                if dividend_yield > 0:  # 유효한 배당 수익률이 있는 경우만 포함
-                    included.append(ScreeningResult(
-                        stock_code=stock_code,
-                        dividend_yield=dividend_yield,
-                        dividend_count=dividend_count,
-                        meets_criteria=meets_criteria
-                    ))
-                else:
+                
+                if not dividend_info:
                     excluded.append(stock_code)
-
-            except NoPriceDataError:
-                excluded.append(stock_code)
+                    continue
+                    
+                # 스크리닝 지표 계산
+                dividend_count = len(dividend_info)
+                consecutive_years = self._calculate_consecutive_years(dividend_info)
+                dividend_growth = self._calculate_dividend_growth(dividend_info)
+                
+                # 최근 배당금
+                latest_dividend = dividend_info[-1].dividend_per_share
+                
+                # 스크리닝 조건 평가
+                meets_criteria = (
+                    latest_dividend >= criteria.min_dividend and
+                    dividend_count >= criteria.min_dividend_count and
+                    (criteria.min_consecutive_years is None or 
+                     consecutive_years >= criteria.min_consecutive_years) and
+                    (criteria.min_dividend_growth is None or
+                     dividend_growth >= criteria.min_dividend_growth)
+                )
+                
+                # 결과 추가
+                included.append(ScreeningResult(
+                    stock_code=stock_code,
+                    stock_name=self._get_stock_name(stock_code),
+                    dividend_per_share=latest_dividend,
+                    dividend_count=dividend_count,
+                    consecutive_years=consecutive_years,
+                    dividend_growth=dividend_growth,
+                    meets_criteria=meets_criteria
+                ))
+                
             except Exception as e:
-                raise DividendScreeningError(f"Error screening stock {stock_code}: {str(e)}")
-
+                logger.error(f"Error screening stock {stock_code}: {str(e)}")
+                excluded.append(stock_code)
+                
         return {
             "included": included,
-            "excluded": excluded
+            "excluded": excluded,
+            "criteria": criteria,
+            "timestamp": datetime.now().isoformat()
         }
 
-    def _calculate_dividend_count(self, dividend_info: List) -> int:
-        return len(dividend_info)
+    def _calculate_consecutive_years(self, dividend_info: List) -> int:
+        """연속 배당 연도 수 계산"""
+        if not dividend_info:
+            return 0
+            
+        sorted_info = sorted(dividend_info, key=lambda x: x.year)
+        consecutive = 1
+        
+        for i in range(1, len(sorted_info)):
+            if sorted_info[i].year == sorted_info[i-1].year + 1:
+                consecutive += 1
+            else:
+                break
+                
+        return consecutive
+
+    def _calculate_dividend_growth(self, dividend_info: List) -> float:
+        """배당 성장률 계산"""
+        if len(dividend_info) < 2:
+            return 0.0
+            
+        sorted_info = sorted(dividend_info, key=lambda x: x.year)
+        first = sorted_info[0].dividend_per_share
+        last = sorted_info[-1].dividend_per_share
+        
+        return ((last - first) / first) * 100 if first != 0 else 0.0
+
+    def _get_stock_name(self, stock_code: str) -> str:
+        """종목 이름 조회"""
+        # TODO: 종목 이름 조회 로직 구현
+        return stock_code
 
     def _get_current_price(self, stock_code: str) -> float:
-        """주식의 현재 가격을 가져옵니다.
-        
-        Args:
-            stock_code: 종목 코드
-            
-        Returns:
-            현재 주가
-            
-        Raises:
-            NoPriceDataError: 주가 정보를 가져올 수 없는 경우
-        """
+        """주식의 현재 가격을 가져옵니다."""
         # TODO: 실제 주가 데이터 소스와 연동 필요
         raise NoPriceDataError(f"No price data available for {stock_code}")
-
-    def _calculate_average_dividend_yield(self, dividend_info: List) -> float:
-        if not dividend_info:
-            return 0.0
-            
-        try:
-            # 주가 정보를 사용하여 배당 수익률 재계산
-            current_price = self._get_current_price(dividend_info[0].stock_code)
-            total_yield = sum(info.dividend_per_share / current_price * 100 for info in dividend_info)
-            return total_yield / len(dividend_info)
-        except NoPriceDataError:
-            return 0.0

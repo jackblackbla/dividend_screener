@@ -4,6 +4,14 @@ from pydantic import BaseModel
 import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+from usecases.dividend_screening import DividendScreeningUseCase, ScreeningCriteria
+from repositories.dividend_info_repository import DividendInfoRepository
+from repositories.financial_statement_repository import FinancialStatementRepository
+import logging
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -47,19 +55,26 @@ async def get_stock_info(code: str = Query(..., description="종목 코드")):
 class ScreeningResult(BaseModel):
     stock_code: str
     stock_name: str
-    dividend_yield: float
+    dividend_per_share: float
+    dividend_count: int
     consecutive_years: int
+    dividend_growth: float
+    meets_criteria: bool
 
 class ScreeningResponse(BaseModel):
     status: str
     data: List[ScreeningResult]
     message: Optional[str] = None
+    criteria: dict
+    timestamp: str
 
 @app.get("/api/v1/screen", response_model=ScreeningResponse)
 async def screen_stocks(
-    min_yield: float = Query(3.0, description="최소 배당률"),
-    years: int = Query(5, description="연속 배당 년수"),
-    min_count: int = Query(1, description="최소 배당 횟수")
+    min_dividend: float = Query(1000, description="최소 배당금"),
+    min_count: int = Query(3, description="최소 배당 횟수"),
+    years: int = Query(5, description="고려할 연도 수"),
+    min_consecutive_years: Optional[int] = Query(None, description="최소 연속 배당 연도 수"),
+    min_dividend_growth: Optional[float] = Query(None, description="최소 배당 성장률")
 ):
     """
     배당 스크리닝 조건에 맞는 종목들을 조회합니다.
@@ -67,24 +82,47 @@ async def screen_stocks(
     try:
         db = SessionLocal()
         
-        # 임시 하드코딩 데이터
-        results = [
-            {"stock_code": "005930", "stock_name": "삼성전자", "dividend_yield": 3.2, "consecutive_years": 5},
-            {"stock_code": "000660", "stock_name": "SK하이닉스", "dividend_yield": 3.5, "consecutive_years": 6}
-        ]
+        # Repository 초기화
+        dividend_repo = DividendInfoRepository(db)
+        financial_repo = FinancialStatementRepository(db)
         
-        filtered_results = [
-            result for result in results
-            if result["dividend_yield"] >= min_yield and
-            result["consecutive_years"] >= years
-        ][:min_count]
-
+        # UseCase 초기화
+        use_case = DividendScreeningUseCase(dividend_repo, financial_repo)
+        
+        # 모든 종목 코드 가져오기
+        stock_codes = [row[0] for row in db.execute(text("SELECT code FROM stocks")).fetchall()]
+        
+        # 스크리닝 조건 설정
+        criteria = ScreeningCriteria(
+            min_dividend=min_dividend,
+            min_dividend_count=min_count,
+            years_to_consider=years,
+            min_consecutive_years=min_consecutive_years,
+            min_dividend_growth=min_dividend_growth
+        )
+        
+        # 스크리닝 실행
+        result = use_case.screen_stocks(stock_codes, criteria)
+        
         return ScreeningResponse(
             status="success",
-            data=[ScreeningResult(**result) for result in filtered_results]
+            data=result["included"],
+            criteria={
+                "min_dividend": min_dividend,
+                "min_count": min_count,
+                "years": years,
+                "min_consecutive_years": min_consecutive_years,
+                "min_dividend_growth": min_dividend_growth
+            },
+            timestamp=result["timestamp"]
         )
-
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        logger.error(f"Error during screening: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
