@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 from pydantic import BaseModel
 import os
@@ -22,6 +23,15 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 app = FastAPI()
+
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # DB 연결 설정
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -130,7 +140,7 @@ async def screen_stocks(
         )
         
     except Exception as e:
-        logger.error(f"Error during screening: {str(e)}")
+        logger.error(f"Error during screening: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()

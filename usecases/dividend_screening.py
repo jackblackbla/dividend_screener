@@ -1,6 +1,10 @@
 from typing import List, Optional, Dict
 from dataclasses import dataclass
+import sqlalchemy
 from sqlalchemy import func
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 from repositories.dividend_info_repository import DividendInfoRepository
 from repositories.financial_statement_repository import FinancialStatementRepository
 from repositories.stock_price_repository import StockPriceRepository
@@ -112,9 +116,9 @@ class DividendScreeningUseCase:
                 excluded.append(stock_code)
                 
         return {
-            "included": included,
+            "included": [result.__dict__ for result in included],
             "excluded": excluded,
-            "criteria": criteria,
+            "criteria": criteria.__dict__,
             "timestamp": datetime.now().isoformat()
         }
 

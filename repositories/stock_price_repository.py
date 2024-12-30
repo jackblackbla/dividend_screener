@@ -1,5 +1,9 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from schema import StockPrice, Stock
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class StockPriceRepository:
     def __init__(self, session: Session):
@@ -32,10 +36,16 @@ class StockPriceRepository:
 
     def get_latest_trade_date(self) -> str:
         """전체 주가 데이터 중 가장 최근 거래일을 반환합니다."""
-        latest_date = self.session.query(
-            func.max(StockPrice.trade_date)
-        ).scalar()
-        return latest_date.strftime('%Y-%m-%d') if latest_date else None
+        logger.debug("Getting latest trade date using func.max")
+        try:
+            latest_date = self.session.query(
+                func.max(StockPrice.trade_date)
+            ).scalar()
+            logger.debug(f"Latest trade date: {latest_date}")
+            return latest_date.strftime('%Y-%m-%d') if latest_date else None
+        except Exception as e:
+            logger.error(f"Error in get_latest_trade_date: {str(e)}")
+            raise
 
     def get_prices_by_date(self, trade_date: str) -> dict:
         """특정 거래일의 모든 종목 주가를 {stock_id: close_price} 형태로 반환합니다."""

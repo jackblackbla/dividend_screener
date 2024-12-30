@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+import sqlalchemy
 from sqlalchemy import func
 from schema import DividendInfo, Stock
 
