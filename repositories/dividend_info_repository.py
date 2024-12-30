@@ -10,13 +10,13 @@ class DividendInfoRepository:
         if not stock:
             raise ValueError(f"Stock with code {stock_code} not found")
 
-        for data in dividends:
+        for dividend in dividends:
             div = DividendInfo(
                 stock_id=stock.id,
-                year=data['year'],
-                dividend_per_share=data.get('dividend_per_share'),
-                dividend_yield=data.get('dividend_yield'),
-                ex_dividend_date=data.get('ex_dividend_date')
+                year=dividend.year,
+                dividend_per_share=dividend.dividend_per_share,
+                dividend_yield=dividend.dividend_yield,
+                ex_dividend_date=dividend.ex_dividend_date
             )
             self.session.add(div)
         self.session.commit()

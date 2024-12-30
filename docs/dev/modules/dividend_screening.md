@@ -39,6 +39,44 @@
 - `/docs/dev` 쪽 문서(특히 OpenDartApiAdapter, DividendScreeningUseCase 관련)를 완성하겠습니다.
 - 테스트 결과, 스크린샷 등을 `/docs/dev/test_reports`에 추가하겠습니다.
 
+#### /screen API 문서
+**엔드포인트**: `GET /api/v1/screen`
+
+**파라미터**:
+- `min_yield`: 최소 배당률 (기본값: 3.0)
+- `years`: 연속 배당 년수 (기본값: 5)
+- `min_count`: 최소 배당 횟수 (기본값: 1)
+
+**응답 형식**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "stock_code": "005930",
+      "stock_name": "삼성전자",
+      "dividend_yield": 3.2,
+      "consecutive_years": 5
+    }
+  ],
+  "message": null
+}
+```
+
+**에러 응답**:
+```json
+{
+  "status": "error",
+  "data": null,
+  "message": "Internal server error"
+}
+```
+
+**사용 예시**:
+```bash
+curl -X GET "http://localhost:8000/api/v1/screen?min_yield=3.5&years=5&min_count=10"
+```
+
 ### 3.6 성능 테스트 & 최적화
 - 대규모 종목(수백~수천)을 대상으로 배당 스크리닝 시 성능 문제가 없는지 확인하겠습니다.
 - DB 쿼리 최적화를 위해 인덱스 추가 및 쿼리 구조 변경을 고려하겠습니다.

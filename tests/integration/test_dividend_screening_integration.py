@@ -86,6 +86,70 @@ class TestDividendScreeningIntegration(unittest.TestCase):
             self.assertIsNotNone(result.dividend_count)
             self.assertIsInstance(result.meets_criteria, bool)
 
+    def test_performance_with_large_dataset(self):
+        import time
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from schema import Base, Stock, DividendInfo
+        import datetime
+
+        # 대량 데이터를 위한 별도의 데이터베이스 생성
+        engine = create_engine('sqlite:///:memory:')
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        Base.metadata.create_all(engine)
+
+        # 1000개의 테스트 데이터 생성
+        stocks = []
+        for i in range(1000):
+            stock = Stock(code=f'{i:06d}', name=f'Test Stock {i}')
+            stocks.append(stock)
+            session.add(stock)
+        session.commit()
+
+        # 각 주식에 대해 5년치 배당 정보 추가
+        for stock in stocks:
+            for year in range(2019, 2024):
+                dividend = DividendInfo(
+                    stock_id=stock.id,
+                    year=year,
+                    dividend_per_share=1000.0,
+                    dividend_yield=3.5,
+                    ex_dividend_date=datetime.date(year, 12, 31)
+                )
+                session.add(dividend)
+        session.commit()
+
+        # 성능 측정 시작
+        start_time = time.time()
+
+        # 테스트 실행
+        dividend_repo = DividendInfoRepository(session)
+        financial_repo = FinancialStatementRepository(session)
+        use_case = DividendScreeningUseCase(dividend_repo, financial_repo)
+
+        criteria = ScreeningCriteria(
+            min_dividend_yield=3.0,
+            min_dividend_count=5,
+            years_to_consider=5
+        )
+
+        stock_codes = [stock.code for stock in stocks]
+        results = use_case.screen_stocks(stock_codes, criteria)
+
+        # 성능 측정 종료
+        elapsed_time = time.time() - start_time
+
+        # 결과 검증
+        self.assertEqual(len(results), 1000)
+        for result in results:
+            self.assertIsNotNone(result.dividend_yield)
+            self.assertIsNotNone(result.dividend_count)
+            self.assertIsInstance(result.meets_criteria, bool)
+
+        # 성능 로그 기록
+        print(f"\nPerformance Test Result: Processed 1000 stocks in {elapsed_time:.2f} seconds")
+
 @pytest.fixture
 def mock_open_dart_adapter(mocker):
     import datetime
@@ -119,10 +183,13 @@ def mock_open_dart_adapter(mocker):
     
     return session
 
-def test_screen_stocks_with_mock_data(mock_open_dart_adapter):
+def test_screen_stocks_with_mock_data(mock_open_dart_adapter, mocker):
     dividend_repo = DividendInfoRepository(mock_open_dart_adapter)
     financial_repo = FinancialStatementRepository(mock_open_dart_adapter)
     use_case = DividendScreeningUseCase(dividend_repo, financial_repo)
+
+    # Mock current price to return 100,000
+    mocker.patch.object(use_case, '_get_current_price', return_value=100000)
 
     criteria = ScreeningCriteria(
         min_dividend_yield=3.0,

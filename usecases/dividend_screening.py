@@ -24,37 +24,45 @@ class DividendScreeningUseCase:
         self.dividend_repo = dividend_repo
         self.financial_repo = financial_repo
 
-    def screen_stocks(self, stock_codes: List[str], criteria: ScreeningCriteria) -> List[ScreeningResult]:
+    def screen_stocks(self, stock_codes: List[str], criteria: ScreeningCriteria) -> dict:
         if not stock_codes:
             raise DividendScreeningError("Stock codes list cannot be empty")
 
         if criteria.years_to_consider <= 0:
             raise DividendScreeningError("Years to consider must be greater than 0")
 
-        results = []
+        included = []
+        excluded = []
         for stock_code in stock_codes:
             try:
                 dividend_info = self.dividend_repo.get_dividend_info(stock_code, criteria.years_to_consider)
                 dividend_count = self._calculate_dividend_count(dividend_info)
                 dividend_yield = self._calculate_average_dividend_yield(dividend_info)
                 
-                # 주가 정보가 없는 경우 배당률이 0이 되므로 meets_criteria는 False
                 meets_criteria = (
                     dividend_yield >= criteria.min_dividend_yield and
                     dividend_count >= criteria.min_dividend_count
                 )
 
-                results.append(ScreeningResult(
-                    stock_code=stock_code,
-                    dividend_yield=dividend_yield,
-                    dividend_count=dividend_count,
-                    meets_criteria=meets_criteria
-                ))
+                if dividend_yield > 0:  # 유효한 배당 수익률이 있는 경우만 포함
+                    included.append(ScreeningResult(
+                        stock_code=stock_code,
+                        dividend_yield=dividend_yield,
+                        dividend_count=dividend_count,
+                        meets_criteria=meets_criteria
+                    ))
+                else:
+                    excluded.append(stock_code)
 
+            except NoPriceDataError:
+                excluded.append(stock_code)
             except Exception as e:
                 raise DividendScreeningError(f"Error screening stock {stock_code}: {str(e)}")
 
-        return results
+        return {
+            "included": included,
+            "excluded": excluded
+        }
 
     def _calculate_dividend_count(self, dividend_info: List) -> int:
         return len(dividend_info)
@@ -79,13 +87,9 @@ class DividendScreeningUseCase:
             return 0.0
             
         try:
+            # 주가 정보를 사용하여 배당 수익률 재계산
             current_price = self._get_current_price(dividend_info[0].stock_code)
-            if current_price <= 0:
-                return 0.0
-                
-            total_dividend = sum(info.dividend_per_share for info in dividend_info)
-            average_dividend = total_dividend / len(dividend_info)
-            return (average_dividend / current_price) * 100
-            
+            total_yield = sum(info.dividend_per_share / current_price * 100 for info in dividend_info)
+            return total_yield / len(dividend_info)
         except NoPriceDataError:
             return 0.0

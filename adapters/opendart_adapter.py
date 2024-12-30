@@ -52,13 +52,16 @@ class OpenDartApiAdapter:
             response = requests.get(url, params=params)
             response.raise_for_status()
             data = response.json()
+            print(f"API Response: {data}")  # API 응답 로깅
+            print(f"Request URL: {response.url}")  # 요청 URL 로깅
+            print(f"Status Code: {response.status_code}")  # 상태 코드 로깅
             
             if data['status'] != '000':
                 raise OpenDartApiError(f"API error: {data['message']}")
 
             results = []
             for item in data['list']:
-                if item['fs_nm'] == '연결재무제표' and item['sj_nm'] == '재무상태표':
+                if item.get('fs_nm') == '연결재무제표':
                     results.append(FinancialStatement(
                         year=year,
                         quarter=quarter,
@@ -69,8 +72,16 @@ class OpenDartApiAdapter:
                         liabilities=float(item.get('thstrm_amount', 0)),
                         equity=float(item.get('thstrm_amount', 0))
                     ))
+                    break  # 첫 번째 유효한 항목만 처리
             return results
 
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:
+                raise OpenDartApiError("API rate limit exceeded. Please try again later.")
+            elif e.response.status_code == 400:
+                raise OpenDartApiError("Invalid request parameters. Please check your input.")
+            else:
+                raise OpenDartApiError(f"API request failed with status code {e.response.status_code}: {str(e)}")
         except requests.exceptions.RequestException as e:
             raise OpenDartApiError(f"API request failed: {str(e)}")
 
@@ -84,7 +95,7 @@ class OpenDartApiAdapter:
             "crtfc_key": self.api_key,
             "corp_code": corp_code,
             "bsns_year": str(year),
-            "reprt_code": "11011"
+            "reprt_code": "11011"  # 사업보고서
         }
 
         try:
@@ -97,18 +108,30 @@ class OpenDartApiAdapter:
 
             results = []
             for item in data['list']:
-                ex_dividend_date = None
-                if item.get('ex_dividend_date'):
-                    ex_dividend_date = datetime.strptime(item['ex_dividend_date'], '%Y-%m-%d')
-                
-                results.append(DividendInfo(
-                    year=year,
-                    dividend_per_share=float(item.get('cash_dividend', 0)),
-                    dividend_yield=float(item.get('dividend_yield', 0)),
-                    ex_dividend_date=ex_dividend_date
-                ))
+                # 보통주 배당 정보만 추출
+                if item.get('stock_knd') == '보통주' and item.get('se') == '주당 현금배당금(원)':
+                    dividend_per_share = float(item.get('thstrm', '0').replace(',', ''))  # 당기 배당금
+                    dividend_yield = float(item.get('thstrm', '0').replace(',', ''))  # 당기 배당수익률
+                    ex_dividend_date = None
+                    if item.get('stlm_dt'):  # 결산기준일
+                        ex_dividend_date = datetime.strptime(item['stlm_dt'], '%Y-%m-%d')
+                    
+                    results.append(DividendInfo(
+                        year=year,
+                        dividend_per_share=dividend_per_share,
+                        dividend_yield=dividend_yield,
+                        ex_dividend_date=ex_dividend_date
+                    ))
+                    break  # 보통주 정보만 필요하므로 첫 번째 항목 처리 후 종료
             return results
 
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:
+                raise OpenDartApiError("API rate limit exceeded. Please try again later.")
+            elif e.response.status_code == 400:
+                raise OpenDartApiError("Invalid request parameters. Please check your input.")
+            else:
+                raise OpenDartApiError(f"API request failed with status code {e.response.status_code}: {str(e)}")
         except requests.exceptions.RequestException as e:
             raise OpenDartApiError(f"API request failed: {str(e)}")
 
@@ -138,6 +161,13 @@ class OpenDartApiAdapter:
                 "ex_dividend_date": ex_dividend_date
             }
 
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:
+                raise OpenDartApiError("API rate limit exceeded. Please try again later.")
+            elif e.response.status_code == 400:
+                raise OpenDartApiError("Invalid request parameters. Please check your input.")
+            else:
+                raise OpenDartApiError(f"API request failed with status code {e.response.status_code}: {str(e)}")
         except requests.exceptions.RequestException as e:
             raise OpenDartApiError(f"API request failed: {str(e)}")
 
@@ -155,7 +185,7 @@ class OpenDartApiAdapter:
             CorpCodeFetchError: API 호출 실패 시
         """
         try:
-            response = requests.get(f"http://localhost:8001/api/v1/stock?code={stock_code}")
+            response = requests.get(f"http://localhost:8002/api/v1/stock?code={stock_code}")
             response.raise_for_status()  # HTTP 오류 발생 시 예외 발생
             data = response.json()
             if data["status"] != "success":
@@ -164,5 +194,12 @@ class OpenDartApiAdapter:
             if not corp_code:
                 raise ValueError("corp_code not found in response")
             return corp_code
-        except Exception as e:
-            raise CorpCodeFetchError(f"Failed to fetch corp_code for {stock_code}: {e}")
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:
+                raise CorpCodeFetchError("API rate limit exceeded. Please try again later.")
+            elif e.response.status_code == 400:
+                raise CorpCodeFetchError("Invalid request parameters. Please check your input.")
+            else:
+                raise CorpCodeFetchError(f"API request failed with status code {e.response.status_code}: {str(e)}")
+        except requests.exceptions.RequestException as e:
+            raise CorpCodeFetchError(f"API request failed: {str(e)}")
