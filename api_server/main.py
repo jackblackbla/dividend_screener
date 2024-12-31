@@ -9,6 +9,7 @@ from usecases.dividend_screening import DividendScreeningUseCase, ScreeningCrite
 from repositories.dividend_info_repository import DividendInfoRepository
 from repositories.financial_statement_repository import FinancialStatementRepository
 from repositories.stock_price_repository import StockPriceRepository
+from schema import Stock
 import logging
 
 # 로깅 설정
@@ -74,10 +75,12 @@ class ScreeningResult(BaseModel):
     stock_code: str
     stock_name: str
     dividend_per_share: float
+    dividend_yield: float
     dividend_count: int
     consecutive_years: int
     dividend_growth: float
     meets_criteria: bool
+    latest_close_price: Optional[float] = None
 
 class ScreeningResponse(BaseModel):
     status: str
@@ -98,15 +101,14 @@ async def screen_stocks(
     """
     배당 스크리닝 조건에 맞는 종목들을 조회합니다.
     """
+    db = SessionLocal()
     try:
-        db = SessionLocal()
-        
         # Repository 초기화
         dividend_repo = DividendInfoRepository(db)
         financial_repo = FinancialStatementRepository(db)
-        
-        # Repository 및 UseCase 초기화
         stock_price_repo = StockPriceRepository(db)
+        
+        # UseCase 초기화
         use_case = DividendScreeningUseCase(dividend_repo, financial_repo, stock_price_repo, db)
         
         # 모든 종목 코드 가져오기
@@ -125,6 +127,26 @@ async def screen_stocks(
         # 스크리닝 실행
         result = use_case.screen_stocks(stock_codes, criteria)
         
+        # 가장 최근 거래일 가져오기
+        latest_date = stock_price_repo.get_latest_trade_date()
+        
+        # 최근 거래일의 종가 정보 가져오기
+        latest_prices = stock_price_repo.get_prices_by_date(latest_date)
+        
+        for stock in result["included"]:
+            if "stock_code" not in stock:
+                logger.error(f"Skipping stock due to missing stock_code: {stock}")
+                continue
+                
+            try:
+                stock_code = stock["stock_code"]
+                stock_id = _get_stock_id(db, stock_code)
+                stock["latest_close_price"] = latest_prices.get(stock_id)
+            except KeyError as e:
+                logger.error(f"Error processing stock: {str(e)}")
+                continue
+                continue
+        
         return ScreeningResponse(
             status="success",
             data=result["included"],
@@ -138,12 +160,18 @@ async def screen_stocks(
             },
             timestamp=result["timestamp"]
         )
-        
     except Exception as e:
         logger.error(f"Error during screening: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
+
+def _get_stock_id(db, stock_code: str) -> int:
+    """주식 코드를 사용하여 주식 ID를 조회합니다."""
+    stock = db.query(Stock).filter_by(code=stock_code).first()
+    if stock:
+        return stock.id
+    raise ValueError(f"Stock with code {stock_code} not found")
 
 if __name__ == "__main__":
     import uvicorn

@@ -124,7 +124,8 @@ class DividendScreeningUseCase:
                 "consecutive_years": result.consecutive_years,
                 "dividend_growth": result.dividend_growth,
                 "dividend_yield": result.dividend_yield,
-                "meets_criteria": result.meets_criteria
+                "meets_criteria": result.meets_criteria,
+                "stock_code": result.stock_code  # stock_code 키 추가
             } for result in included],
             "excluded": excluded,
             "criteria": criteria.__dict__,

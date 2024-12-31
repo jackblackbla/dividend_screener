@@ -16,6 +16,7 @@ class Stock(Base):
     listed_date = Column(Date)  # 상장일
     financial_statements = relationship("FinancialStatement", back_populates="stock")
     dividend_info = relationship("DividendInfo", back_populates="stock")
+    dividend_yields = relationship("DividendYield", back_populates="stock")
 
 class FinancialStatement(Base):
     __tablename__ = 'financial_statements'
@@ -32,6 +33,18 @@ class FinancialStatement(Base):
     equity = Column(Numeric(20, 2))  # 자본총계
     stock = relationship("Stock", back_populates="financial_statements")
 
+class DividendYield(Base):
+    __tablename__ = 'dividend_yields'
+    __table_args__ = (
+        UniqueConstraint('stock_id', 'date', name='uq_dividend_yield'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    stock_id = Column(Integer, ForeignKey('stocks.id'), nullable=False)
+    date = Column(Date, nullable=False)  # 배당률 계산일
+    yield_value = Column(Numeric(5, 2), nullable=False)  # 배당수익률
+    stock = relationship("Stock", back_populates="dividend_yields")
+
 class DividendInfo(Base):
     __tablename__ = 'dividend_info'
     __table_args__ = (
@@ -40,10 +53,10 @@ class DividendInfo(Base):
 
     id = Column(Integer, primary_key=True)
     stock_id = Column(Integer, ForeignKey('stocks.id'), nullable=False)
+    code = Column(String(20), nullable=False)  # 주식 코드
     year = Column(Integer, nullable=False)
     reprt_code = Column(String(5), nullable=False)  # 보고서 코드 (예: 11011)
     dividend_per_share = Column(Numeric(20, 2))  # 주당 배당금
-    dividend_yield = Column(Numeric(5, 2))  # 배당수익률
     ex_dividend_date = Column(Date)  # 배당락일
     stock = relationship("Stock", back_populates="dividend_info")
 

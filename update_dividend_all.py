@@ -1,12 +1,13 @@
 import requests
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from schema import DividendInfo, Stock
+from schema import DividendInfo, DividendYield, Stock, StockPrice
 import time
 import logging
 from datetime import datetime
 from exceptions import APIError, RateLimitError
 import os
+import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # 로깅 설정
@@ -37,7 +38,7 @@ def fetch_dividend_info(stock, year):
     params = {
         "crtfc_key": API_KEY,
         "corp_code": stock.corp_code,
-        "bsns_year": year,
+        "bsns_year": str(year),  # 연도별 데이터 요청
         "reprt_code": "11011"  # 사업보고서
     }
     
@@ -51,33 +52,105 @@ def fetch_dividend_info(stock, year):
             else:
                 raise APIError(f"API Error: {data['message']}")
                 
+        # JSON 응답 로깅
+        logger.info(f"API Response for {stock.corp_code}:\n{json.dumps(data, indent=2, ensure_ascii=False)}")
+                
         return data
     
     except requests.exceptions.RequestException as e:
         logger.error(f"Request failed for {stock.corp_code}: {str(e)}")
         return None
 
-def process_dividend_data(stock, year, data):
+def process_dividend_data(stock, data, year):
     session = Session()
     try:
+        if 'list' not in data or not isinstance(data['list'], list):
+            logger.warning(f"No dividend list found for {stock.corp_code} ({year})")
+            return
+             
+        # 최근 주가 정보 가져오기
+        latest_price = session.query(StockPrice).filter(
+            StockPrice.stock_id == stock.id
+        ).order_by(StockPrice.trade_date.desc()).first()
+         
+        if not latest_price:
+            logger.warning(f"No price data found for {stock.code}")
+            return
+             
+        # 배당 관련 정보 초기화
+        dividend_info = {
+            'dividend_per_share': 0,
+            'cash_dividend_ratio': 0,
+            'stock_dividend_ratio': 0
+        }
+        
+        # 배당 정보 초기화
+        ex_dividend_date = ''
+        
         for item in data['list']:
+            # 'se' 필드에 따라 데이터 처리
             if item['se'] == '주당 현금배당금(원)':
-                if 'stock_knd' in item and item['stock_knd'] == '보통주':
-                    dividend_data = {
-                        'stock_id': stock.id,
-                        'year': year,
-                        'reprt_code': "11011",
-                        'dividend_per_share': float(item.get('thstrm', '0').replace(',', '').replace('-', '0')),
-                        'dividend_yield': float(item.get('thstrm_rate', '0').replace('-', '0')),
-                        'ex_dividend_date': item.get('stlm_dt', '')
-                    }
+                val = float(item.get('thstrm', '0').replace(',', '').replace('-', '0'))
+                if val > dividend_info['dividend_per_share']:
+                    dividend_info['dividend_per_share'] = val
+                    ex_dividend_date = item.get('stlm_dt', '')  # 해당 아이템에서 날짜 가져오기
+        
+        if dividend_info['dividend_per_share'] > 0 and ex_dividend_date:
+            # 저장할 데이터 준비
+            # DividendInfo 데이터 준비
+            dividend_data = {
+                'stock_id': stock.id,
+                'code': stock.code,
+                'year': year,
+                'reprt_code': "11011",
+                'dividend_per_share': dividend_info['dividend_per_share'],
+                'ex_dividend_date': ex_dividend_date
+            }
+
+            # DividendYield 데이터 준비
+            if latest_price and latest_price.close_price > 0:
+                yield_data = {
+                    'stock_id': stock.id,
+                    'date': latest_price.trade_date,
+                    'yield_value': (dividend_info['dividend_per_share'] / float(latest_price.close_price)) * 100
+                }
+
+                # DividendYield 중복 확인
+                existing_yield = session.query(DividendYield).filter_by(
+                    stock_id=stock.id,
+                    date=latest_price.trade_date
+                ).first()
+
+                if existing_yield:
+                    existing_yield.yield_value = yield_data['yield_value']
+                else:
+                    yield_record = DividendYield(**yield_data)
+                    session.add(yield_record)
+            # 추가 배당 정보 로깅
+            logger.info(f"Additional dividend info for {stock.code} ({stock.corp_code}):\n"
+                       f"Cash Dividend Ratio: {dividend_info['cash_dividend_ratio']}%\n"
+                       f"Stock Dividend Ratio: {dividend_info['stock_dividend_ratio']}%")
+            
+            # 중복 데이터 확인
+            existing = session.query(DividendInfo).filter_by(
+                stock_id=stock.id,
+                year=year,
+                reprt_code="11011"
+            ).first()
+            
+            if existing:
+                # 기존 데이터 업데이트
+                existing.dividend_per_share = dividend_info['dividend_per_share']
+                existing.ex_dividend_date = ex_dividend_date
+            else:
+                # 새로운 데이터 생성
+                dividend = DividendInfo(**dividend_data)
+                session.add(dividend)
+                
+            logger.info(f"Processed dividend for {stock.code} ({stock.corp_code}): {dividend_info['dividend_per_share']}원")
+        else:
+            logger.warning(f"Invalid dividend data for {stock.corp_code}")
                     
-                    if dividend_data['dividend_per_share'] > 0:
-                        dividend = DividendInfo(**dividend_data)
-                        session.merge(dividend)
-                        logger.info(f"Processed dividend for {stock.code} ({stock.corp_code}, {year}): {dividend_data['dividend_per_share']}원")
-                    else:
-                        logger.warning(f"No dividend data for {stock.corp_code} ({year})")
         session.commit()
     except Exception as e:
         logger.error(f"Error processing {stock.corp_code}: {str(e)}")
@@ -87,20 +160,20 @@ def process_dividend_data(stock, year, data):
 
 def process_stock_batch(stocks):
     for stock in stocks:
-        for year in range(2018, 2024):
+        for year in range(2019, 2024):  # 2019-2023년도 데이터 처리
             try:
                 data = fetch_dividend_info(stock, year)
                 if data:
-                    process_dividend_data(stock, year, data)
+                    process_dividend_data(stock, data, year)
                 time.sleep(0.3)  # Rate Limit 대응
             except RateLimitError:
                 time.sleep(1)
                 continue
             except APIError as e:
-                logger.error(str(e))
+                logger.error(f"{year} {str(e)}")
                 continue
             except Exception as e:
-                logger.error(f"Unexpected error: {str(e)}")
+                logger.error(f"{year} Unexpected error: {str(e)}")
                 continue
 
 def main():
@@ -108,7 +181,7 @@ def main():
         session = Session()
         stocks = session.query(Stock).filter(Stock.corp_code.isnot(None)).all()
         total_stocks = len(stocks)
-        logger.info(f"Starting dividend update for {total_stocks} stocks")
+        logger.info(f"Starting 2019-2023 dividend update for {total_stocks} stocks")
         
         # 종목을 배치로 분할
         batches = [stocks[i:i + BATCH_SIZE] for i in range(0, len(stocks), BATCH_SIZE)]
@@ -122,7 +195,7 @@ def main():
                 except Exception as e:
                     logger.error(f"Batch processing failed: {str(e)}")
         
-        logger.info("Dividend update completed successfully")
+        logger.info("2023 dividend update completed successfully")
         
     except Exception as e:
         logger.error(f"Fatal error: {str(e)}")

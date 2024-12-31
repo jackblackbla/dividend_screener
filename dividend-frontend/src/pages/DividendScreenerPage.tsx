@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Stock } from '../components/ResultsTable';
 import axios from 'axios';
 import BasicFilter from '../components/BasicFilter';
-import AdvancedFilter from '../components/AdvancedFilter.tsx';
 import ResultsTable from '../components/ResultsTable.tsx';
 
 interface BasicFilters {
@@ -37,8 +36,11 @@ const DividendScreenerPage = () => {
     const params = {
       min_yield: basicFilters.min_yield,
       min_count: basicFilters.min_count,
-      min_dividend: 100.0, // 기본값 설정
-      limit: 5 // 기본값 설정
+      years: basicFilters.years,
+      yield_ranges: advancedFilters.yield_ranges,
+      consecutive_years: advancedFilters.consecutive_years,
+      min_dividend: 100.0,
+      limit: 5
     };
     return params;
   };
@@ -69,34 +71,16 @@ const DividendScreenerPage = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 max-w-[1600px] mx-auto">
       <h1 className="text-2xl font-bold mb-4">배당주 스크리너 (통합버전)</h1>
       
-      <BasicFilter 
-        filters={basicFilters}
-        onChange={setBasicFilters}
+      <BasicFilter
+        basicFilters={basicFilters}
+        advancedFilters={advancedFilters}
+        onBasicChange={setBasicFilters}
+        onAdvancedChange={setAdvancedFilters}
+        onSearch={fetchAPI}
       />
-      
-      <button
-        className="mt-4 text-blue-500 hover:underline"
-        onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-      >
-        {isAdvancedOpen ? '고급필터 숨기기' : '고급필터 펼치기'}
-      </button>
-      
-      {isAdvancedOpen && (
-        <AdvancedFilter
-          filters={advancedFilters}
-          onChange={setAdvancedFilters}
-        />
-      )}
-      
-      <button
-        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-        onClick={fetchAPI}
-      >
-        검색
-      </button>
       
       {isLoading ? (
         <div className="mt-4 text-center">로딩 중...</div>
