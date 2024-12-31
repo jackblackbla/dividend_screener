@@ -78,7 +78,8 @@ class ScreeningResult(BaseModel):
     dividend_yield: float
     dividend_count: int
     consecutive_years: int
-    dividend_growth: float
+    long_term_growth: float  # 장기 배당 성장률
+    short_term_growth: float  # 단기 배당 성장률
     meets_criteria: bool
     latest_close_price: Optional[float] = None
 

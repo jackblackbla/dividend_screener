@@ -31,7 +31,8 @@ class ScreeningResult:
     dividend_per_share: float
     dividend_count: int
     consecutive_years: int
-    dividend_growth: float
+    long_term_growth: float  # 장기 성장률 (기존 dividend_growth)
+    short_term_growth: float  # 단기 성장률 (새로 추가)
     dividend_yield: float
     meets_criteria: bool
 
@@ -68,14 +69,17 @@ class DividendScreeningUseCase:
                     excluded.append(stock_code)
                     continue
                     
-                # 최근 배당금
-                latest_dividend = dividend_info[-1].dividend_per_share
-                logger.debug(f"Stock {stock_code}: Latest dividend = {latest_dividend}")
+                # 2023년 배당금
+                dividend_2023 = next((d.dividend_per_share for d in dividend_info if d.year == 2023), None)
+                if dividend_2023 is None:
+                    excluded.append(stock_code)
+                    continue
+                logger.debug(f"Stock {stock_code}: 2023 dividend = {dividend_2023}")
                 
                 # 주가 및 배당률 계산
                 try:
                     close_price = self._get_current_price(stock_code)
-                    dividend_yield = self._calculate_dividend_yield(latest_dividend, close_price)
+                    dividend_yield = self._calculate_dividend_yield(dividend_2023, close_price)
                     logger.debug(f"Stock {stock_code}: Close price = {close_price}, Dividend yield = {dividend_yield}%")
                 except NoPriceDataError:
                     dividend_yield = 0.0
@@ -84,12 +88,13 @@ class DividendScreeningUseCase:
                 # 스크리닝 지표 계산
                 dividend_count = len(dividend_info)
                 consecutive_years = self._calculate_consecutive_years(dividend_info)
-                dividend_growth = self._calculate_dividend_growth(dividend_info)
-                logger.debug(f"Stock {stock_code}: Dividend count = {dividend_count}, Consecutive years = {consecutive_years}, Dividend growth = {dividend_growth}%")
+                long_term_growth = self._calculate_long_term_growth(dividend_info)
+                short_term_growth = self._calculate_short_term_growth(dividend_info)
+                logger.debug(f"Stock {stock_code}: Dividend count = {dividend_count}, Consecutive years = {consecutive_years}, Long term growth = {long_term_growth}%, Short term growth = {short_term_growth}%")
                 
                 # 스크리닝 조건 평가
                 meets_criteria = (
-                    latest_dividend >= criteria.min_dividend and
+                    dividend_2023 >= criteria.min_dividend and
                     dividend_yield >= criteria.min_yield and
                     dividend_count >= criteria.min_dividend_count and
                     (criteria.min_consecutive_years is None or
@@ -103,10 +108,11 @@ class DividendScreeningUseCase:
                 included.append(ScreeningResult(
                     stock_code=stock_code,
                     stock_name=self._get_stock_name(stock_code),
-                    dividend_per_share=latest_dividend,
+                    dividend_per_share=dividend_2023,
                     dividend_count=dividend_count,
                     consecutive_years=consecutive_years,
-                    dividend_growth=dividend_growth,
+                    long_term_growth=long_term_growth,
+                    short_term_growth=short_term_growth,
                     dividend_yield=dividend_yield,
                     meets_criteria=meets_criteria
                 ))
@@ -122,7 +128,8 @@ class DividendScreeningUseCase:
                 "dividend_per_share": result.dividend_per_share,
                 "dividend_count": result.dividend_count,
                 "consecutive_years": result.consecutive_years,
-                "dividend_growth": result.dividend_growth,
+                "long_term_growth": result.long_term_growth,
+                "short_term_growth": result.short_term_growth,
                 "dividend_yield": result.dividend_yield,
                 "meets_criteria": result.meets_criteria,
                 "stock_code": result.stock_code  # stock_code 키 추가
@@ -171,8 +178,8 @@ class DividendScreeningUseCase:
                 
         return consecutive
 
-    def _calculate_dividend_growth(self, dividend_info: List) -> float:
-        """배당 성장률 계산"""
+    def _calculate_long_term_growth(self, dividend_info: List) -> float:
+        """장기 배당 성장률 계산"""
         if len(dividend_info) < 2:
             return 0.0
             
@@ -181,6 +188,17 @@ class DividendScreeningUseCase:
         last = sorted_info[-1].dividend_per_share
         
         return ((last - first) / first) * 100 if first != 0 else 0.0
+
+    def _calculate_short_term_growth(self, dividend_info: List) -> float:
+        """단기 배당 성장률 계산 (작년 대비)"""
+        if len(dividend_info) < 2:
+            return 0.0
+            
+        sorted_info = sorted(dividend_info, key=lambda x: x.year)
+        prev = sorted_info[-2].dividend_per_share
+        current = sorted_info[-1].dividend_per_share
+        
+        return ((current - prev) / prev) * 100 if prev != 0 else 0.0
 
     def _get_stock_name(self, stock_code: str) -> str:
         """종목 이름 조회"""

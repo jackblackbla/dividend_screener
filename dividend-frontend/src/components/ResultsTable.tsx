@@ -8,7 +8,8 @@ export interface Stock {
   dividend_per_share: number;
   dividend_count: number;
   consecutive_years: number;
-  dividend_growth: number;
+  long_term_growth: number;
+  short_term_growth: number;
   latest_close_price: number;
 }
 
@@ -83,7 +84,7 @@ const ResultsTable = ({ data }: ResultsTableProps) => {
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
               onClick={() => requestSort('dividend_per_share')}
             >
-              주당 배당금(원){getSortIndicator('dividend_per_share')}
+              2023년 주당 배당금(원){getSortIndicator('dividend_per_share')}
             </th>
             <th 
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
@@ -91,17 +92,23 @@ const ResultsTable = ({ data }: ResultsTableProps) => {
             >
               배당횟수{getSortIndicator('dividend_count')}
             </th>
-            <th 
+            <th
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
               onClick={() => requestSort('consecutive_years')}
             >
               연속배당연수{getSortIndicator('consecutive_years')}
             </th>
-            <th 
+            <th
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => requestSort('dividend_growth')}
+              onClick={() => requestSort('long_term_growth')}
             >
-              배당 증가율(%){getSortIndicator('dividend_growth')}
+              장기 배당 증가율(%){getSortIndicator('long_term_growth')}
+            </th>
+            <th
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              onClick={() => requestSort('short_term_growth')}
+            >
+              단기 배당 증가율(%){getSortIndicator('short_term_growth')}
             </th>
           </tr>
         </thead>
@@ -130,7 +137,10 @@ const ResultsTable = ({ data }: ResultsTableProps) => {
                 {stock.consecutive_years}년
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {stock.dividend_growth?.toFixed(2) ?? '0.00'}
+                {stock.long_term_growth?.toFixed(2) ?? '0.00'}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {stock.short_term_growth?.toFixed(2) ?? '0.00'}
               </td>
             </tr>
           ))}

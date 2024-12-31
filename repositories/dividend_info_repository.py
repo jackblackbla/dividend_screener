@@ -36,11 +36,10 @@ class DividendInfoRepository:
 
     def get_high_yield_stocks(self, min_yield: float) -> list:
         """최소 배당률 이상인 종목들의 배당 정보를 조회합니다."""
-        latest_date = self.session.query(
-            func.max(DividendInfo.year)
-        ).scalar()
+        latest_date = 2023  # 2023년 배당 정보만 조회
 
-        if not latest_date:
+        # 2023년 데이터가 없는 경우 빈 리스트 반환
+        if not self.session.query(DividendInfo).filter_by(year=latest_date).first():
             return []
 
         return self.session.query(
