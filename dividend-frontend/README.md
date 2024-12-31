@@ -1,50 +1,95 @@
-# React + TypeScript + Vite
+# Dividend Screener
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+주식 배당금 스크리너 애플리케이션
 
-Currently, two official plugins are available:
+## 프로젝트 개요
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+이 프로젝트는 한국 주식 시장의 배당 정보를 분석하고 필터링할 수 있는 웹 애플리케이션입니다. OpenDART API를 활용하여 기업의 재무 정보를 수집하고, 사용자가 다양한 조건으로 배당 정보를 검색할 수 있도록 합니다.
 
-## Expanding the ESLint configuration
+## 주요 기능
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- 배당 정보 검색 및 필터링
+- 기업 재무 정보 조회
+- 배당 수익률, 배당 성장률 등 주요 지표 제공
+- 사용자 정의 필터 기능
 
-- Configure the top-level `parserOptions` property like this:
+## 기술 스택
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### 백엔드
+- Python 3.10
+- FastAPI
+- SQLAlchemy
+- OpenDART API
+- SQLite
+
+### 프론트엔드
+- React 18
+- TypeScript
+- Tailwind CSS
+- Vite
+
+## 프로젝트 구조
+
+```
+dividend_screener/
+├── api_server/            # FastAPI 서버
+├── dividend-frontend/     # React 프론트엔드
+├── adapters/              # 외부 API 어댑터
+├── repositories/          # 데이터베이스 리포지토리
+├── usecases/              # 비즈니스 로직
+├── tests/                 # 테스트 코드
+├── docs/                  # 문서
+└── alembic/               # 데이터베이스 마이그레이션
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## 설치 및 실행
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+### 백엔드
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+1. 가상 환경 생성 및 활성화:
+```bash
+python -m venv venv
+source venv/bin/activate
 ```
+
+2. 의존성 설치:
+```bash
+pip install -r requirements.txt
+```
+
+3. 데이터베이스 마이그레이션:
+```bash
+alembic upgrade head
+```
+
+4. 서버 실행:
+```bash
+uvicorn api_server.main:app --reload
+```
+
+### 프론트엔드
+
+1. 의존성 설치:
+```bash
+cd dividend-frontend
+npm install
+```
+
+2. 개발 서버 실행:
+```bash
+npm run dev
+```
+
+## 기여 가이드
+
+기여를 원하시면 다음 단계를 따르세요:
+
+1. 이슈를 생성하여 변경 사항을 논의합니다.
+2. 새로운 브랜치를 생성합니다 (`git checkout -b feature/your-feature`).
+3. 변경 사항을 커밋합니다 (`git commit -m 'Add some feature'`).
+4. 브랜치를 푸시합니다 (`git push origin feature/your-feature`).
+5. 풀 리퀘스트를 생성합니다.
+
+## 라이선스
+
+MIT License
