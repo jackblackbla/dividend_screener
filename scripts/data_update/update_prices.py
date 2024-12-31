@@ -1,6 +1,6 @@
 import argparse
 from datetime import datetime
-from krx_ticker_fetcher import save_prices_to_db
+from scripts.utils.krx_ticker_fetcher import save_prices_to_db
 
 def main():
     parser = argparse.ArgumentParser(description='Update stock prices from KRX')

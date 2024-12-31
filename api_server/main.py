@@ -1,15 +1,16 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pydantic import BaseModel
 import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from usecases.dividend_screening import DividendScreeningUseCase, ScreeningCriteria
+from usecases.dividend_screening import StockIssuanceReductionUseCase
 from repositories.dividend_info_repository import DividendInfoRepository
 from repositories.financial_statement_repository import FinancialStatementRepository
 from repositories.stock_price_repository import StockPriceRepository
-from schema import Stock
+from config.schema import Stock, DividendInfo, StockIssuanceReduction
 import logging
 
 # 로깅 설정
@@ -163,6 +164,42 @@ async def screen_stocks(
         )
     except Exception as e:
         logger.error(f"Error during screening: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+class IssuanceReductionResponse(BaseModel):
+    status: str
+    data: List[Dict]
+    message: Optional[str] = None
+
+@app.post("/api/v1/issuance-reduction", response_model=IssuanceReductionResponse)
+async def process_issuance_reduction(
+    stock_code: str = Query(..., description="종목 코드"),
+    year: int = Query(..., description="사업연도"),
+    reprt_code: str = Query(..., description="보고서 코드")
+):
+    """
+    증자(감자) 현황 데이터를 처리합니다.
+    """
+    db = SessionLocal()
+    try:
+        # Repository 초기화
+        dividend_repo = DividendInfoRepository(db)
+        
+        # UseCase 초기화
+        use_case = StockIssuanceReductionUseCase(dividend_repo, db)
+        
+        # 증자(감자) 현황 데이터 처리
+        use_case.process_issuance_reduction(stock_code, year, reprt_code)
+        
+        return IssuanceReductionResponse(
+            status="success",
+            data=[],
+            message="Issuance reduction data processed successfully"
+        )
+    except Exception as e:
+        logger.error(f"Error processing issuance reduction: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()

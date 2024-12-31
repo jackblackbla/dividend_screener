@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from schema import FinancialStatement, Stock
+from config.schema import FinancialStatement, Stock
 
 class FinancialStatementRepository:
     def __init__(self, session: Session):

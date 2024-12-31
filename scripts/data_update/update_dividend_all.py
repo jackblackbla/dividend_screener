@@ -1,7 +1,7 @@
 import requests
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from schema import DividendInfo, DividendYield, Stock, StockPrice
+from config.schema import DividendInfo, DividendYield, Stock, StockPrice
 import time
 import logging
 from datetime import datetime

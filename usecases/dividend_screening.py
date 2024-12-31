@@ -11,7 +11,7 @@ from repositories.stock_price_repository import StockPriceRepository
 from exceptions import DividendScreeningError, NoPriceDataError
 import logging
 from datetime import datetime
-from schema import Stock
+from config.schema import Stock
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +100,7 @@ class DividendScreeningUseCase:
                     (criteria.min_consecutive_years is None or
                      consecutive_years >= criteria.min_consecutive_years) and
                     (criteria.min_dividend_growth is None or
-                     dividend_growth >= criteria.min_dividend_growth)
+                     long_term_growth >= criteria.min_dividend_growth)
                 )
                 logger.debug(f"Stock {stock_code}: Meets criteria = {meets_criteria}")
 
@@ -228,3 +228,44 @@ class DividendScreeningUseCase:
         if close_price == 0:
             return 0.0
         return (dividend_per_share / close_price) * 100
+
+class StockIssuanceReductionUseCase:
+    def __init__(self,
+                 dividend_repo: DividendInfoRepository,
+                 session):
+        self.dividend_repo = dividend_repo
+        self.session = session
+
+    def process_issuance_reduction(self, stock_code: str, year: int, reprt_code: str):
+        """증자(감자) 현황 데이터를 처리합니다."""
+        from adapters.opendart_adapter import OpenDartApiAdapter
+        from config import DART_API_KEY
+
+        # API 어댑터 초기화
+        adapter = OpenDartApiAdapter(DART_API_KEY)
+
+        # 증자(감자) 현황 데이터 조회
+        issuance_reductions = adapter.get_stock_issuance_reduction(stock_code, year, reprt_code)
+
+        # 무상조정계수 계산
+        for issuance in issuance_reductions:
+            if issuance.isu_dcrs_stle in ['무상증자', '무상감자']:
+                issuance.adjust_ratio = self._calculate_adjust_ratio(issuance)
+
+        # 데이터 저장
+        self.dividend_repo.save_stock_issuance_reduction(stock_code, issuance_reductions)
+
+    def _calculate_adjust_ratio(self, issuance) -> float:
+        """무상조정계수를 계산합니다."""
+        if issuance.isu_dcrs_stle == '무상증자':
+            # 무상증자: 1 + (발행 수량 / 기존 주식 수)
+            return 1 + (issuance.isu_dcrs_qy / self._get_previous_shares_count(issuance.corp_code))
+        elif issuance.isu_dcrs_stle == '무상감자':
+            # 무상감자: (기존 주식 수 - 감자 수량) / 기존 주식 수
+            return (self._get_previous_shares_count(issuance.corp_code) - issuance.isu_dcrs_qy) / self._get_previous_shares_count(issuance.corp_code)
+        return 1.0
+
+    def _get_previous_shares_count(self, corp_code: str) -> int:
+        """이전 발행주식수를 조회합니다."""
+        # TODO: 실제 구현 필요 (기존 발행주식수 테이블에서 조회)
+        return 1000000  # 임시 값

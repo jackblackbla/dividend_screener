@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, Numeric, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Date, DateTime, Numeric, ForeignKey, UniqueConstraint, BigInteger
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -17,6 +17,7 @@ class Stock(Base):
     financial_statements = relationship("FinancialStatement", back_populates="stock")
     dividend_info = relationship("DividendInfo", back_populates="stock")
     dividend_yields = relationship("DividendYield", back_populates="stock")
+    issuance_reductions = relationship("StockIssuanceReduction", back_populates="stock")
 
 class FinancialStatement(Base):
     __tablename__ = 'financial_statements'
@@ -57,8 +58,21 @@ class DividendInfo(Base):
     year = Column(Integer, nullable=False)
     reprt_code = Column(String(5), nullable=False)  # 보고서 코드 (예: 11011)
     dividend_per_share = Column(Numeric(20, 2))  # 주당 배당금
+    adjusted_dividend_per_share = Column(Numeric(20, 2))  # 조정된 주당 배당금
     ex_dividend_date = Column(Date)  # 배당락일
     stock = relationship("Stock", back_populates="dividend_info")
+
+    def apply_adjustment_factor(self, adjustment_factor: float):
+        """
+        무상조정계수를 적용하여 조정된 주당 배당금 계산
+        
+        Args:
+            adjustment_factor: 무상조정계수
+        """
+        if adjustment_factor <= 0:
+            raise ValueError("Adjustment factor must be greater than 0")
+            
+        self.adjusted_dividend_per_share = self.dividend_per_share / adjustment_factor
 
 class StockPrice(Base):
     __tablename__ = 'stock_prices'
@@ -73,3 +87,25 @@ class StockPrice(Base):
     created_at = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
 
     stock = relationship("Stock")
+
+class StockIssuanceReduction(Base):
+    __tablename__ = 'stock_issuance_reduction'
+    __table_args__ = (
+        UniqueConstraint('corp_code', 'isu_dcrs_de', 'isu_dcrs_stle', name='uq_stock_issuance_reduction'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    stock_id = Column(Integer, ForeignKey('stocks.id'), nullable=False)
+    corp_code = Column(String(8), nullable=False)
+    rcept_no = Column(String(14))  # 접수번호
+    isu_dcrs_de = Column(Date)  # 발행 감소 일자
+    isu_dcrs_stle = Column(String(100))  # 발행 감소 형태
+    isu_dcrs_stock_knd = Column(String(50))  # 주식 종류
+    isu_dcrs_qy = Column(BigInteger)  # 발행 감소 수량
+    isu_dcrs_mstvdv_fval_amount = Column(Numeric(20, 2))  # 주당 액면 가액
+    isu_dcrs_mstvdv_amount = Column(Numeric(20, 2))  # 발행 감소 주당 가액
+    stlm_dt = Column(Date)  # 결산기준일
+    adjust_ratio = Column(Numeric(10, 4))  # 무상조정계수
+    created_at = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+
+    stock = relationship("Stock", back_populates="issuance_reductions")

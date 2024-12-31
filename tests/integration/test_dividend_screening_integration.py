@@ -19,10 +19,17 @@ class TestDividendScreeningIntegration(unittest.TestCase):
         import datetime
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
-        from schema import Base, Stock, DividendInfo
-        
-        # 테스트용 메모리 데이터베이스 생성
-        engine = create_engine('sqlite:///:memory:')
+        from config.schema import Base, Stock, DividendInfo
+        from dotenv import load_dotenv
+
+        # 환경 변수 로드
+        load_dotenv()
+
+        # 환경 변수에서 데이터베이스 URL 읽기
+        db_url = os.getenv('DATABASE_URL')
+        if not db_url:
+            raise ValueError("DATABASE_URL environment variable is required")
+        engine = create_engine(db_url)
         Session = sessionmaker(bind=engine)
         cls.session = Session()
         
@@ -90,7 +97,7 @@ class TestDividendScreeningIntegration(unittest.TestCase):
         import time
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
-        from schema import Base, Stock, DividendInfo
+        from config.schema import Base, Stock, DividendInfo
         import datetime
 
         # 대량 데이터를 위한 별도의 데이터베이스 생성
@@ -155,7 +162,7 @@ def mock_open_dart_adapter(mocker):
     import datetime
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
-    from schema import Base, Stock, DividendInfo
+    from config.schema import Base, Stock, DividendInfo
     
     # 테스트용 메모리 데이터베이스 생성
     engine = create_engine('sqlite:///:memory:')

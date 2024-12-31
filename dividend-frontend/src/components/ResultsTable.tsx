@@ -90,7 +90,7 @@ const ResultsTable = ({ data }: ResultsTableProps) => {
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
               onClick={() => requestSort('dividend_count')}
             >
-              배당횟수{getSortIndicator('dividend_count')}
+              5년간 배당횟수{getSortIndicator('dividend_count')}
             </th>
             <th
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
@@ -102,13 +102,13 @@ const ResultsTable = ({ data }: ResultsTableProps) => {
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
               onClick={() => requestSort('long_term_growth')}
             >
-              장기 배당 증가율(%){getSortIndicator('long_term_growth')}
+              장기 배당 증가율(5년 기준, %){getSortIndicator('long_term_growth')}
             </th>
             <th
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
               onClick={() => requestSort('short_term_growth')}
             >
-              단기 배당 증가율(%){getSortIndicator('short_term_growth')}
+              단기 배당 증가율(1년 기준, %){getSortIndicator('short_term_growth')}
             </th>
           </tr>
         </thead>

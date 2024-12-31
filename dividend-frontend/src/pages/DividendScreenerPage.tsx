@@ -27,7 +27,6 @@ const DividendScreenerPage = () => {
     consecutive_years: 0,
   });
 
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [results, setResults] = useState<Stock[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
