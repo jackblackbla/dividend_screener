@@ -54,6 +54,11 @@ class DividendScreeningUseCase:
         if criteria.years_to_consider <= 0:
             raise DividendScreeningError("Years to consider must be greater than 0")
 
+        # 무상조정계수 적용
+        issuanceUseCase = StockIssuanceReductionUseCase(self.dividend_repo, self.session)
+        for code in stock_codes:
+            issuanceUseCase.adjust_dividend_by_factor(code, start_year=2015, end_year=2023)
+
         included = []
         excluded = []
         
@@ -235,6 +240,10 @@ class StockIssuanceReductionUseCase:
                  session):
         self.dividend_repo = dividend_repo
         self.session = session
+        # OpenDARTReader 초기화
+        from config import DART_API_KEY
+        import OpenDartReader
+        self._dart = OpenDartReader(DART_API_KEY)
 
     def process_issuance_reduction(self, stock_code: str, year: int, reprt_code: str):
         """증자(감자) 현황 데이터를 처리합니다."""
@@ -269,3 +278,57 @@ class StockIssuanceReductionUseCase:
         """이전 발행주식수를 조회합니다."""
         # TODO: 실제 구현 필요 (기존 발행주식수 테이블에서 조회)
         return 1000000  # 임시 값
+
+    def compute_adjustment_factor(self, corp_code: str, start_year: int, end_year: int) -> float:
+        """
+        start_year ~ end_year 사이 발생한 무상증자/감자 이벤트를 조회 후,
+        누적 곱으로 최종 무상조정계수를 계산합니다.
+        """
+        cumulative_factor = 1.0
+
+        for year in range(start_year, end_year + 1):
+            try:
+                df = self._dart.report(corp_code, '증자', year)
+                if df is None or df.empty:
+                    continue
+
+                for idx, row in df.iterrows():
+                    isu_type = str(row.get('isu_dcrs_stle', ''))
+                    quantity = row.get('isu_dcrs_qy', 0)
+
+                    if '무상증자' in isu_type:
+                        factor = 1 + (quantity / self._get_previous_shares_count(corp_code))
+                        cumulative_factor *= factor
+                    elif '무상감자' in isu_type:
+                        prev_shares = self._get_previous_shares_count(corp_code)
+                        factor = (prev_shares - quantity) / prev_shares
+                        cumulative_factor *= factor
+
+            except Exception as e:
+                logger.error(f"Failed to retrieve or parse data for {corp_code}, year={year}, err={str(e)}")
+                continue
+
+        return cumulative_factor
+
+    def adjust_dividend_by_factor(self, stock_code: str, start_year: int, end_year: int):
+        """
+        1) 무상조정계수(cumulative_factor) 계산
+        2) DB에서 과거 DPS 불러옴
+        3) '조정된 DPS'로 업데이트 or 로깅
+        """
+        corp_code = stock_code  # 실제론 Dart 고유번호 변환 필요할 수 있음
+        factor = self.compute_adjustment_factor(corp_code, start_year, end_year)
+
+        dividend_info = self.dividend_repo.get_dividend_info(stock_code, years_to_consider=10)
+        if not dividend_info:
+            logger.info(f"No dividend info found for {stock_code}")
+            return
+
+        logger.info(f"[{stock_code}] 무상조정계수 (총 누적) = {factor:.4f}")
+
+        for record in dividend_info:
+            original_dps = record.dividend_per_share
+            adjusted_dps = original_dps / factor
+            logger.info(f"  Year={record.year}, Original={original_dps}, Adjusted={adjusted_dps:.2f}")
+
+        # 실제론 self.dividend_repo.update_adjusted_dps(...) 등으로 DB 반영 가능

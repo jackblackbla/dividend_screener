@@ -1,7 +1,7 @@
 import requests
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from config.schema import DividendInfo, DividendYield, Stock, StockPrice
+from config.schema import DividendInfo, DividendYield, Stock, StockPrice, StockIssuanceReduction
 import time
 import logging
 from datetime import datetime
@@ -61,6 +61,36 @@ def fetch_dividend_info(stock, year):
         logger.error(f"Request failed for {stock.corp_code}: {str(e)}")
         return None
 
+def process_issuance_reduction(stock, year):
+    from adapters.opendart_adapter import OpenDartApiAdapter
+    session = Session()
+    try:
+        adapter = OpenDartApiAdapter(API_KEY)
+        events = adapter.calculate_adjustment_factors(stock.code, f'{year}-01-01', f'{year}-12-31')
+        
+        for event in events:
+            existing = session.query(StockIssuanceReduction).filter_by(
+                stock_id=stock.id,
+                isu_dcrs_de=event['date']
+            ).first()
+            
+            if not existing:
+                issuance = StockIssuanceReduction(
+                    stock_id=stock.id,
+                    corp_code=stock.corp_code,
+                    isu_dcrs_de=event['date'],
+                    isu_dcrs_stle=event['type'],
+                    adjust_ratio=event['cumulative_factor']
+                )
+                session.add(issuance)
+        
+        session.commit()
+    except Exception as e:
+        logger.error(f"Error processing issuance reduction for {stock.code}: {str(e)}")
+        session.rollback()
+    finally:
+        session.close()
+
 def process_dividend_data(stock, data, year):
     session = Session()
     try:
@@ -104,6 +134,7 @@ def process_dividend_data(stock, data, year):
                 'year': year,
                 'reprt_code': "11011",
                 'dividend_per_share': dividend_info['dividend_per_share'],
+                'adjust_ratio': dividend_info.get('adjust_ratio', 1.0),  # 조정계수 설정
                 'ex_dividend_date': ex_dividend_date
             }
 
@@ -162,9 +193,14 @@ def process_stock_batch(stocks):
     for stock in stocks:
         for year in range(2019, 2024):  # 2019-2023년도 데이터 처리
             try:
+                # 배당 정보 처리
                 data = fetch_dividend_info(stock, year)
                 if data:
                     process_dividend_data(stock, data, year)
+                
+                # 무상증자/감자 정보 처리
+                process_issuance_reduction(stock, year)
+                
                 time.sleep(0.3)  # Rate Limit 대응
             except RateLimitError:
                 time.sleep(1)

@@ -36,11 +36,15 @@ class DividendInfo:
     ex_dividend_date: Optional[datetime]
 
 class OpenDartApiAdapter:
-    def __init__(self, api_key: str):
-        self.api_key = api_key
+    def __init__(self):
+        from config import DART_API_KEY
+        self.api_key = DART_API_KEY
+        print(f"Using DART_API_KEY = '{self.api_key}' (length={len(self.api_key) if self.api_key else 0})")  # API 키 로깅 추가
         self.base_url = "https://opendart.fss.or.kr/api"
         self.corp_code_map = {
             "005930": "00126380",  # 삼성전자
+            "000660": "00164742",  # SK하이닉스
+            "003920": "00164743",  # 푸드웰
             # 다른 종목 코드 추가
         }
 
@@ -201,6 +205,10 @@ class OpenDartApiAdapter:
             response = requests.get(url, params=params)
             response.raise_for_status()
             data = response.json()
+            
+            print(f"API Response: {data}")  # API 응답 로깅
+            print(f"Request URL: {response.url}")  # 요청 URL 로깅
+            print(f"Status Code: {response.status_code}")  # 상태 코드 로깅
 
             if data['status'] != '000':
                 raise OpenDartApiError(f"API error: {data['message']}")
@@ -253,7 +261,9 @@ class OpenDartApiAdapter:
 
         # 이벤트 타입별로 데이터 수집
         events = []
-        for event_type in ['무상증자', '감자', '주식배당', '액면분할']:
+        # 이벤트 타입별로 데이터 수집
+        events = []
+        for event_type in ['무상증자', '무상감자', '유상증자', '액면분할', '주식배당', '합병', '분할합병']:
             try:
                 df = self.get_stock_issuance_reduction(stock_code, int(start_date[:4]), '11011')
                 if df is not None:
@@ -263,13 +273,20 @@ class OpenDartApiAdapter:
                             factor = 1.0
                             if event_type == '무상증자':
                                 factor = 1 + (item.isu_dcrs_qy / item.isu_dcrs_mstvdv_fval_amount)
-                            elif event_type == '감자':
+                            elif event_type == '무상감자':
                                 factor = item.isu_dcrs_qy / item.isu_dcrs_mstvdv_fval_amount
-                            elif event_type == '주식배당':
+                            elif event_type == '유상증자':
                                 factor = 1 + (item.isu_dcrs_qy / item.isu_dcrs_mstvdv_fval_amount)
                             elif event_type == '액면분할':
                                 factor = item.isu_dcrs_qy / item.isu_dcrs_mstvdv_fval_amount
-                            
+                            elif event_type == '주식배당':
+                                factor = 1 + (item.isu_dcrs_qy / item.isu_dcrs_mstvdv_fval_amount)
+                            elif event_type == '합병':
+                                # 합병비율 계산 (예: 1:0.5 합병 → factor = 1.5)
+                                factor = 1 + (item.isu_dcrs_qy / item.isu_dcrs_mstvdv_fval_amount)
+                            elif event_type == '분할합병':
+                                # 분할합병비율 계산 (예: 1:0.3 분할합병 → factor = 1.3)
+                                factor = 1 + (item.isu_dcrs_qy / item.isu_dcrs_mstvdv_fval_amount)
                             events.append({
                                 'date': item.isu_dcrs_de.strftime('%Y-%m-%d'),
                                 'type': event_type,

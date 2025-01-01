@@ -59,6 +59,7 @@ class DividendInfo(Base):
     reprt_code = Column(String(5), nullable=False)  # 보고서 코드 (예: 11011)
     dividend_per_share = Column(Numeric(20, 2))  # 주당 배당금
     adjusted_dividend_per_share = Column(Numeric(20, 2))  # 조정된 주당 배당금
+    adjusted_ratio = Column(Numeric(10, 4))  # 무상조정계수
     ex_dividend_date = Column(Date)  # 배당락일
     stock = relationship("Stock", back_populates="dividend_info")
 
@@ -105,7 +106,7 @@ class StockIssuanceReduction(Base):
     isu_dcrs_mstvdv_fval_amount = Column(Numeric(20, 2))  # 주당 액면 가액
     isu_dcrs_mstvdv_amount = Column(Numeric(20, 2))  # 발행 감소 주당 가액
     stlm_dt = Column(Date)  # 결산기준일
-    adjust_ratio = Column(Numeric(10, 4))  # 무상조정계수
+    adjusted_ratio = Column(Numeric(10, 4))  # 무상조정계수
     created_at = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
 
     stock = relationship("Stock", back_populates="issuance_reductions")
