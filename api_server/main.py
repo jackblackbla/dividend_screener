@@ -27,7 +27,7 @@ logger.addHandler(ch)
 
 app = FastAPI()
 
-# CORS 설정
+# CORS 설정 (필요에 맞게 allow_origins 수정)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:5174"],
@@ -41,6 +41,10 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# --------------------------------------------
+# MODELS FOR API RESPONSES
+# --------------------------------------------
+
 class StockResponse(BaseModel):
     stock_code: str
     stock_name: str
@@ -49,6 +53,34 @@ class ApiResponse(BaseModel):
     status: str
     data: Optional[StockResponse] = None
     message: Optional[str] = None
+
+class ScreeningResult(BaseModel):
+    stock_code: str
+    stock_name: str
+    dividend_per_share: float
+    dividend_yield: float
+    dividend_count: int
+    consecutive_years: int
+    long_term_growth: float  # 장기 배당 성장률
+    short_term_growth: float  # 단기 배당 성장률
+    meets_criteria: bool
+    latest_close_price: Optional[float] = None
+
+class ScreeningResponse(BaseModel):
+    status: str
+    data: List[ScreeningResult]
+    message: Optional[str] = None
+    criteria: dict
+    timestamp: str
+
+class IssuanceReductionResponse(BaseModel):
+    status: str
+    data: List[Dict]
+    message: Optional[str] = None
+
+# --------------------------------------------
+# ENDPOINTS
+# --------------------------------------------
 
 @app.get("/api/v1/stock", response_model=ApiResponse)
 async def get_stock_info(code: str = Query(..., description="종목 코드")):
@@ -73,27 +105,10 @@ async def get_stock_info(code: str = Query(..., description="종목 코드")):
         else:
             raise HTTPException(status_code=404, detail=f"Stock not found for code: {code}")
 
-class ScreeningResult(BaseModel):
-    stock_code: str
-    stock_name: str
-    dividend_per_share: float
-    dividend_yield: float
-    dividend_count: int
-    consecutive_years: int
-    long_term_growth: float  # 장기 배당 성장률
-    short_term_growth: float  # 단기 배당 성장률
-    meets_criteria: bool
-    latest_close_price: Optional[float] = None
 
-class ScreeningResponse(BaseModel):
-    status: str
-    data: List[ScreeningResult]
-    message: Optional[str] = None
-    criteria: dict
-    timestamp: str
-
-@app.get("/api/v1/screen")
+@app.get("/api/v1/screen", response_model=ScreeningResponse)
 async def screen_stocks(
+    # 기존 필터들
     min_yield: float = Query(0.0, description="최소 배당수익률 (%)"),
     min_count: int = Query(1, description="최소 배당 횟수"),
     years: int = Query(5, description="조회할 연도 수"),
@@ -102,9 +117,19 @@ async def screen_stocks(
     limit: int = Query(100, description="결과 제한 수"),
     market_cap: Optional[float] = Query(None, description="최소 시가총액 (억원)"),
     avoid_div_cut: Optional[bool] = Query(False, description="배당감소 제외"),
-    sector: Optional[str] = Query(None, description="업종")
+    sector: Optional[str] = Query(None, description="업종"),
+
+    # 새로 추가된 필터
+    min_growth_rate: float = Query(0.0, description="최소 배당성장률(%) (최근 n년간)")
 ):
-    """배당주 스크리닝 API"""
+    """
+    배당주 스크리닝 API
+
+    고급 필터에 '배당성장률(min_growth_rate)' 파라미터를 새로 추가.
+    프론트에서 '?min_growth_rate=5' 형태로 전달하면,
+    백엔드에서 DB(사전 계산된 dividend_growth_3y 등)를 활용해
+    필터링할 수 있다.
+    """
     db = SessionLocal()
     try:
         # Repository 초기화
@@ -127,10 +152,11 @@ async def screen_stocks(
             min_dividend_count=min_count,
             years_to_consider=years,
             min_consecutive_years=consecutive_years,
-            avoid_div_cut=avoid_div_cut
+            avoid_div_cut=avoid_div_cut,
+            min_dividend_growth=min_growth_rate  # 배당성장률 필드
         )
         
-        # 종목 코드 조회 쿼리 개선
+        # 종목 코드 조회 쿼리 (market_cap, sector 등)
         query = text("""
             SELECT DISTINCT s.code 
             FROM stocks s
@@ -141,38 +167,73 @@ async def screen_stocks(
             AND s.corp_code IS NOT NULL
         """)
         
-        stock_codes = [row[0] for row in db.execute(
-            query, 
-            {
-                "market_cap": market_cap * 100000000 if market_cap else None,
-                "sector": sector
-            }
-        ).fetchall()]
+        # market_cap은 억원 단위 가정 -> 실제 DB는 원단위?
+        market_cap_raw = market_cap * 100000000 if market_cap else None
+
+        stock_codes = [
+            row[0] for row in db.execute(
+                query, 
+                {
+                    "market_cap": market_cap_raw,
+                    "sector": sector
+                }
+            ).fetchall()
+        ]
         
         if not stock_codes:
-            return {
-                "status": "success",
-                "data": [],
-                "message": "No stocks found matching the criteria",
-                "criteria": criteria.__dict__,
-                "timestamp": datetime.now().isoformat()
-            }
+            return ScreeningResponse(
+                status="success",
+                data=[],
+                message="No stocks found matching the criteria",
+                criteria=criteria.__dict__,
+                timestamp=datetime.now().isoformat()
+            )
         
         # 스크리닝 실행
-        result = use_case.screen_stocks(stock_codes[:limit], criteria)
+        # (screen_stocks() -> dict with included[] / excluded[].)
+        # Suppose the 'screen_stocks()' returns a dict with format:
+        # {
+        #   "included": [ { ... }, { ... } ],
+        #   "excluded": [ ... ],
+        #   "criteria": { ... },
+        #   "timestamp": "...",
+        # }
+        #
+        # We'll reshape it to ScreeningResponse
+        result_dict = use_case.screen_stocks(stock_codes[:limit], criteria)
         
-        return result
+        # "included" -> transform to a list of ScreeningResult
+        included_list = []
+        if "included" in result_dict:
+            for item in result_dict["included"]:
+                included_list.append(
+                    ScreeningResult(
+                        stock_code=item.get("stock_code"),
+                        stock_name=item.get("stock_name"),
+                        dividend_per_share=item.get("dividend_per_share", 0.0),
+                        dividend_yield=item.get("dividend_yield", 0.0),
+                        dividend_count=item.get("dividend_count", 0),
+                        consecutive_years=item.get("consecutive_years", 0),
+                        long_term_growth=item.get("long_term_growth", 0.0),
+                        short_term_growth=item.get("short_term_growth", 0.0),
+                        meets_criteria=item.get("meets_criteria", False),
+                        latest_close_price=item.get("latest_close_price")
+                    )
+                )
+
+        return ScreeningResponse(
+            status="success",
+            data=included_list,
+            message="Screening completed",
+            criteria=result_dict.get("criteria", {}),
+            timestamp=datetime.now().isoformat()
+        )
         
     except Exception as e:
         logger.error(f"Error during screening: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
-
-class IssuanceReductionResponse(BaseModel):
-    status: str
-    data: List[Dict]
-    message: Optional[str] = None
 
 @app.post("/api/v1/issuance-reduction", response_model=IssuanceReductionResponse)
 async def process_issuance_reduction(
