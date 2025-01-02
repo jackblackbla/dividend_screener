@@ -17822,3 +17822,370 @@
 2025-01-01 20:43:50,094 - INFO - Calculated factor=1.00000000 for DividendID=295
 2025-01-01 20:43:50,095 - INFO - Skipping DividendID=295 as factor is 1.0
 2025-01-01 20:43:50,095 - INFO - Processing DividendID=296 (StockCode=006800, Year=2023)
+2025-01-02 13:38:19,524 - INFO - Script started at 2025-01-02 13:38:19.524871
+2025-01-02 13:38:19,554 - INFO - Starting to process 2918 DividendInfo records
+2025-01-02 13:38:19,557 - INFO - Processing DividendID=1 (StockCode=003920, Year=2019)
+2025-01-02 13:38:19,875 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:19,979 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:19,984 - INFO - Calculated factor=1.0000 for DividendID=1
+2025-01-02 13:38:19,989 - INFO - Skipping DividendID=1 as factor is 1.0
+2025-01-02 13:38:19,990 - INFO - Processing DividendID=2 (StockCode=003920, Year=2020)
+2025-01-02 13:38:20,269 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:20,349 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:20,350 - INFO - Calculated factor=1.0000 for DividendID=2
+2025-01-02 13:38:20,351 - INFO - Skipping DividendID=2 as factor is 1.0
+2025-01-02 13:38:20,352 - INFO - Processing DividendID=3 (StockCode=003920, Year=2021)
+2025-01-02 13:38:20,631 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:20,732 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:20,733 - INFO - Calculated factor=1.0000 for DividendID=3
+2025-01-02 13:38:20,737 - INFO - Skipping DividendID=3 as factor is 1.0
+2025-01-02 13:38:20,739 - INFO - Processing DividendID=4 (StockCode=003920, Year=2022)
+2025-01-02 13:38:21,028 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:21,143 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:21,145 - INFO - Calculated factor=1.0000 for DividendID=4
+2025-01-02 13:38:21,148 - INFO - Skipping DividendID=4 as factor is 1.0
+2025-01-02 13:38:21,150 - INFO - Processing DividendID=5 (StockCode=003920, Year=2023)
+2025-01-02 13:38:21,514 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:21,640 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:21,641 - INFO - Calculated factor=1.0000 for DividendID=5
+2025-01-02 13:38:21,644 - INFO - Skipping DividendID=5 as factor is 1.0
+2025-01-02 13:38:21,646 - INFO - Processing DividendID=6 (StockCode=003550, Year=2019)
+2025-01-02 13:38:22,012 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:22,120 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:22,121 - INFO - Calculated factor=1.0000 for DividendID=6
+2025-01-02 13:38:22,124 - INFO - Skipping DividendID=6 as factor is 1.0
+2025-01-02 13:38:22,126 - INFO - Processing DividendID=7 (StockCode=003550, Year=2020)
+2025-01-02 13:38:22,407 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:22,521 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:22,522 - INFO - Calculated factor=1.0000 for DividendID=7
+2025-01-02 13:38:22,525 - INFO - Skipping DividendID=7 as factor is 1.0
+2025-01-02 13:38:22,527 - INFO - Processing DividendID=8 (StockCode=003550, Year=2021)
+2025-01-02 13:38:22,937 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:22,937 - INFO - Calculated factor=1.00000 for DividendID=8
+2025-01-02 13:38:22,938 - INFO - Skipping DividendID=8 as factor is 1.0
+2025-01-02 13:38:22,939 - INFO - Processing DividendID=9 (StockCode=003550, Year=2022)
+2025-01-02 13:38:23,226 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:23,319 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:23,320 - INFO - Calculated factor=1.00000 for DividendID=9
+2025-01-02 13:38:23,324 - INFO - Skipping DividendID=9 as factor is 1.0
+2025-01-02 13:38:23,326 - INFO - Processing DividendID=10 (StockCode=003550, Year=2023)
+2025-01-02 13:38:23,646 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:23,772 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:23,773 - INFO - Calculated factor=1.00000 for DividendID=10
+2025-01-02 13:38:23,777 - INFO - Skipping DividendID=10 as factor is 1.0
+2025-01-02 13:38:23,780 - INFO - Processing DividendID=11 (StockCode=005720, Year=2019)
+2025-01-02 13:38:24,083 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:24,191 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:24,192 - INFO - Calculated factor=1.000000 for DividendID=11
+2025-01-02 13:38:24,196 - INFO - Skipping DividendID=11 as factor is 1.0
+2025-01-02 13:38:24,198 - INFO - Processing DividendID=12 (StockCode=051900, Year=2019)
+2025-01-02 13:38:24,533 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:24,636 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:24,636 - INFO - Calculated factor=1.0000 for DividendID=12
+2025-01-02 13:38:24,639 - INFO - Skipping DividendID=12 as factor is 1.0
+2025-01-02 13:38:24,641 - INFO - Processing DividendID=13 (StockCode=005720, Year=2020)
+2025-01-02 13:38:24,959 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:25,082 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:25,083 - INFO - Calculated factor=1.000000 for DividendID=13
+2025-01-02 13:38:25,086 - INFO - Skipping DividendID=13 as factor is 1.0
+2025-01-02 13:38:25,087 - INFO - Processing DividendID=14 (StockCode=051900, Year=2020)
+2025-01-02 13:38:25,458 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:25,556 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:25,557 - INFO - Calculated factor=1.0000 for DividendID=14
+2025-01-02 13:38:25,560 - INFO - Skipping DividendID=14 as factor is 1.0
+2025-01-02 13:38:25,563 - INFO - Processing DividendID=15 (StockCode=005720, Year=2021)
+2025-01-02 13:38:25,901 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:26,013 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:26,014 - INFO - Calculated factor=1.0000 for DividendID=15
+2025-01-02 13:38:26,014 - INFO - Skipping DividendID=15 as factor is 1.0
+2025-01-02 13:38:26,015 - INFO - Processing DividendID=16 (StockCode=051900, Year=2021)
+2025-01-02 13:38:26,347 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:26,472 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:26,473 - INFO - Calculated factor=1.00000 for DividendID=16
+2025-01-02 13:38:26,477 - INFO - Skipping DividendID=16 as factor is 1.0
+2025-01-02 13:38:26,479 - INFO - Processing DividendID=17 (StockCode=005720, Year=2022)
+2025-01-02 13:38:26,759 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:26,868 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:26,869 - INFO - Calculated factor=1.0000 for DividendID=17
+2025-01-02 13:38:26,873 - INFO - Skipping DividendID=17 as factor is 1.0
+2025-01-02 13:38:26,876 - INFO - Processing DividendID=18 (StockCode=051900, Year=2022)
+2025-01-02 13:38:27,169 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:27,192 - ERROR - call_mgRs error: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+2025-01-02 13:38:27,192 - INFO - Calculated factor=1.0000 for DividendID=18
+2025-01-02 13:38:27,195 - INFO - Skipping DividendID=18 as factor is 1.0
+2025-01-02 13:38:27,196 - INFO - Processing DividendID=19 (StockCode=051900, Year=2023)
+2025-01-02 13:38:27,540 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:27,676 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:27,677 - INFO - Calculated factor=1.0000 for DividendID=19
+2025-01-02 13:38:27,680 - INFO - Skipping DividendID=19 as factor is 1.0
+2025-01-02 13:38:27,682 - INFO - Processing DividendID=20 (StockCode=005720, Year=2023)
+2025-01-02 13:38:27,976 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:28,080 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:28,081 - INFO - Calculated factor=1.0000 for DividendID=20
+2025-01-02 13:38:28,084 - INFO - Skipping DividendID=20 as factor is 1.0
+2025-01-02 13:38:28,087 - INFO - Processing DividendID=21 (StockCode=002350, Year=2019)
+2025-01-02 13:38:28,443 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:28,571 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:28,572 - INFO - Calculated factor=1.00000 for DividendID=21
+2025-01-02 13:38:28,575 - INFO - Skipping DividendID=21 as factor is 1.0
+2025-01-02 13:38:28,577 - INFO - Processing DividendID=22 (StockCode=002350, Year=2020)
+2025-01-02 13:38:28,851 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:28,974 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:28,975 - INFO - Calculated factor=1.00000 for DividendID=22
+2025-01-02 13:38:28,979 - INFO - Skipping DividendID=22 as factor is 1.0
+2025-01-02 13:38:28,981 - INFO - Processing DividendID=23 (StockCode=002350, Year=2021)
+2025-01-02 13:38:29,263 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:29,383 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:29,385 - INFO - Calculated factor=1.00000 for DividendID=23
+2025-01-02 13:38:29,388 - INFO - Skipping DividendID=23 as factor is 1.0
+2025-01-02 13:38:29,390 - INFO - Processing DividendID=24 (StockCode=002350, Year=2022)
+2025-01-02 13:38:29,679 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:29,792 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:29,793 - INFO - Calculated factor=1.0000 for DividendID=24
+2025-01-02 13:38:29,796 - INFO - Skipping DividendID=24 as factor is 1.0
+2025-01-02 13:38:29,798 - INFO - Processing DividendID=25 (StockCode=002350, Year=2023)
+2025-01-02 13:38:30,101 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:30,205 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:30,206 - INFO - Calculated factor=1.0000 for DividendID=25
+2025-01-02 13:38:30,209 - INFO - Skipping DividendID=25 as factor is 1.0
+2025-01-02 13:38:30,212 - INFO - Processing DividendID=26 (StockCode=001460, Year=2019)
+2025-01-02 13:38:30,544 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:30,674 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:30,674 - INFO - Calculated factor=1.0000 for DividendID=26
+2025-01-02 13:38:30,676 - INFO - Skipping DividendID=26 as factor is 1.0
+2025-01-02 13:38:30,677 - INFO - Processing DividendID=27 (StockCode=001460, Year=2020)
+2025-01-02 13:38:30,948 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:31,052 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:31,053 - INFO - Calculated factor=1.0000 for DividendID=27
+2025-01-02 13:38:31,056 - INFO - Skipping DividendID=27 as factor is 1.0
+2025-01-02 13:38:31,059 - INFO - Processing DividendID=28 (StockCode=001460, Year=2021)
+2025-01-02 13:38:31,335 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:31,443 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:31,444 - INFO - Calculated factor=1.0000 for DividendID=28
+2025-01-02 13:38:31,447 - INFO - Skipping DividendID=28 as factor is 1.0
+2025-01-02 13:38:31,449 - INFO - Processing DividendID=29 (StockCode=001460, Year=2022)
+2025-01-02 13:38:31,879 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:32,003 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:32,004 - INFO - Calculated factor=1.0000 for DividendID=29
+2025-01-02 13:38:32,008 - INFO - Skipping DividendID=29 as factor is 1.0
+2025-01-02 13:38:32,011 - INFO - Processing DividendID=30 (StockCode=001460, Year=2023)
+2025-01-02 13:38:32,336 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:32,462 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:32,463 - INFO - Calculated factor=1.0000 for DividendID=30
+2025-01-02 13:38:32,466 - INFO - Skipping DividendID=30 as factor is 1.0
+2025-01-02 13:38:32,468 - INFO - Processing DividendID=31 (StockCode=001040, Year=2019)
+2025-01-02 13:38:32,752 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:32,880 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:32,881 - INFO - Calculated factor=1.0000000000000 for DividendID=31
+2025-01-02 13:38:32,885 - INFO - Skipping DividendID=31 as factor is 1.0
+2025-01-02 13:38:32,888 - INFO - Processing DividendID=32 (StockCode=001040, Year=2020)
+2025-01-02 13:38:33,179 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:33,288 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:33,289 - INFO - Calculated factor=1.00000000000000 for DividendID=32
+2025-01-02 13:38:33,293 - INFO - Skipping DividendID=32 as factor is 1.0
+2025-01-02 13:38:33,295 - INFO - Processing DividendID=33 (StockCode=066570, Year=2019)
+2025-01-02 13:38:33,617 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:33,715 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:33,716 - INFO - Calculated factor=1.0000 for DividendID=33
+2025-01-02 13:38:33,719 - INFO - Skipping DividendID=33 as factor is 1.0
+2025-01-02 13:38:33,722 - INFO - Processing DividendID=34 (StockCode=001040, Year=2021)
+2025-01-02 13:38:34,056 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:34,167 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:34,169 - INFO - Calculated factor=1.00000 for DividendID=34
+2025-01-02 13:38:34,171 - INFO - Skipping DividendID=34 as factor is 1.0
+2025-01-02 13:38:34,173 - INFO - Processing DividendID=35 (StockCode=066570, Year=2020)
+2025-01-02 13:38:34,507 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:34,605 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:34,606 - INFO - Calculated factor=1.0000 for DividendID=35
+2025-01-02 13:38:34,606 - INFO - Skipping DividendID=35 as factor is 1.0
+2025-01-02 13:38:34,607 - INFO - Processing DividendID=36 (StockCode=001040, Year=2022)
+2025-01-02 13:38:34,857 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:34,938 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:34,938 - INFO - Calculated factor=1.00000 for DividendID=36
+2025-01-02 13:38:34,939 - INFO - Skipping DividendID=36 as factor is 1.0
+2025-01-02 13:38:34,939 - INFO - Processing DividendID=37 (StockCode=066570, Year=2021)
+2025-01-02 13:38:35,235 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:35,322 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:35,322 - INFO - Calculated factor=1.00000 for DividendID=37
+2025-01-02 13:38:35,323 - INFO - Skipping DividendID=37 as factor is 1.0
+2025-01-02 13:38:35,323 - INFO - Processing DividendID=38 (StockCode=001040, Year=2023)
+2025-01-02 13:38:35,603 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:35,719 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:35,720 - INFO - Calculated factor=1.00000 for DividendID=38
+2025-01-02 13:38:35,723 - INFO - Skipping DividendID=38 as factor is 1.0
+2025-01-02 13:38:35,725 - INFO - Processing DividendID=39 (StockCode=066570, Year=2022)
+2025-01-02 13:38:36,050 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:36,144 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:36,146 - INFO - Calculated factor=1.00000 for DividendID=39
+2025-01-02 13:38:36,149 - INFO - Skipping DividendID=39 as factor is 1.0
+2025-01-02 13:38:36,151 - INFO - Processing DividendID=40 (StockCode=066570, Year=2023)
+2025-01-02 13:38:36,491 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:36,616 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:36,617 - INFO - Calculated factor=1.00000 for DividendID=40
+2025-01-02 13:38:36,620 - INFO - Skipping DividendID=40 as factor is 1.0
+2025-01-02 13:38:36,622 - INFO - Processing DividendID=41 (StockCode=090350, Year=2019)
+2025-01-02 13:38:36,900 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:37,002 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:37,003 - INFO - Calculated factor=1.0000 for DividendID=41
+2025-01-02 13:38:37,006 - INFO - Skipping DividendID=41 as factor is 1.0
+2025-01-02 13:38:37,008 - INFO - Processing DividendID=42 (StockCode=051910, Year=2019)
+2025-01-02 13:38:37,323 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:37,452 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:37,453 - INFO - Calculated factor=1.00000 for DividendID=42
+2025-01-02 13:38:37,456 - INFO - Skipping DividendID=42 as factor is 1.0
+2025-01-02 13:38:37,459 - INFO - Processing DividendID=43 (StockCode=090350, Year=2020)
+2025-01-02 13:38:37,738 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:37,900 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:37,901 - INFO - Calculated factor=1.0000 for DividendID=43
+2025-01-02 13:38:37,904 - INFO - Skipping DividendID=43 as factor is 1.0
+2025-01-02 13:38:37,906 - INFO - Processing DividendID=44 (StockCode=051910, Year=2020)
+2025-01-02 13:38:38,188 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:38,278 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:38,278 - INFO - Calculated factor=1.00000 for DividendID=44
+2025-01-02 13:38:38,279 - INFO - Skipping DividendID=44 as factor is 1.0
+2025-01-02 13:38:38,279 - INFO - Processing DividendID=45 (StockCode=090350, Year=2021)
+2025-01-02 13:38:38,598 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:38,686 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:38,686 - INFO - Calculated factor=1.0000 for DividendID=45
+2025-01-02 13:38:38,687 - INFO - Skipping DividendID=45 as factor is 1.0
+2025-01-02 13:38:38,687 - INFO - Processing DividendID=46 (StockCode=051910, Year=2021)
+2025-01-02 13:38:38,975 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:39,072 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:39,073 - INFO - Calculated factor=1.0000 for DividendID=46
+2025-01-02 13:38:39,076 - INFO - Skipping DividendID=46 as factor is 1.0
+2025-01-02 13:38:39,077 - INFO - Processing DividendID=47 (StockCode=090350, Year=2022)
+2025-01-02 13:38:39,368 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:39,475 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:39,477 - INFO - Calculated factor=1.0000 for DividendID=47
+2025-01-02 13:38:39,480 - INFO - Skipping DividendID=47 as factor is 1.0
+2025-01-02 13:38:39,482 - INFO - Processing DividendID=48 (StockCode=051910, Year=2022)
+2025-01-02 13:38:39,775 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:39,883 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:39,884 - INFO - Calculated factor=1.0000 for DividendID=48
+2025-01-02 13:38:39,886 - INFO - Skipping DividendID=48 as factor is 1.0
+2025-01-02 13:38:39,888 - INFO - Processing DividendID=49 (StockCode=090350, Year=2023)
+2025-01-02 13:38:40,195 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:40,303 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:40,304 - INFO - Calculated factor=1.0000 for DividendID=49
+2025-01-02 13:38:40,306 - INFO - Skipping DividendID=49 as factor is 1.0
+2025-01-02 13:38:40,308 - INFO - Processing DividendID=50 (StockCode=051910, Year=2023)
+2025-01-02 13:38:40,605 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:40,707 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:40,709 - INFO - Calculated factor=1.0000 for DividendID=50
+2025-01-02 13:38:40,713 - INFO - Skipping DividendID=50 as factor is 1.0
+2025-01-02 13:38:40,715 - INFO - Committed batch i=0~50, processed_count=50
+2025-01-02 13:38:40,718 - INFO - Processing DividendID=51 (StockCode=000320, Year=2019)
+2025-01-02 13:38:40,991 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:41,124 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:41,125 - INFO - Calculated factor=1.0000 for DividendID=51
+2025-01-02 13:38:41,127 - INFO - Skipping DividendID=51 as factor is 1.0
+2025-01-02 13:38:41,129 - INFO - Processing DividendID=52 (StockCode=000320, Year=2020)
+2025-01-02 13:38:41,383 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:41,479 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:41,480 - INFO - Calculated factor=1.0000 for DividendID=52
+2025-01-02 13:38:41,483 - INFO - Skipping DividendID=52 as factor is 1.0
+2025-01-02 13:38:41,486 - INFO - Processing DividendID=53 (StockCode=000320, Year=2021)
+2025-01-02 13:38:41,784 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:41,941 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:41,942 - INFO - Calculated factor=1.0000 for DividendID=53
+2025-01-02 13:38:41,945 - INFO - Skipping DividendID=53 as factor is 1.0
+2025-01-02 13:38:41,947 - INFO - Processing DividendID=54 (StockCode=000320, Year=2022)
+2025-01-02 13:38:42,231 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:42,358 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:42,358 - INFO - Calculated factor=1.0000 for DividendID=54
+2025-01-02 13:38:42,360 - INFO - Skipping DividendID=54 as factor is 1.0
+2025-01-02 13:38:42,361 - INFO - Processing DividendID=55 (StockCode=000320, Year=2023)
+2025-01-02 13:38:42,679 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:42,782 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:42,783 - INFO - Calculated factor=1.0000 for DividendID=55
+2025-01-02 13:38:42,786 - INFO - Skipping DividendID=55 as factor is 1.0
+2025-01-02 13:38:42,788 - INFO - Processing DividendID=56 (StockCode=005250, Year=2019)
+2025-01-02 13:38:43,051 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:43,175 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:43,176 - INFO - Calculated factor=1.0000 for DividendID=56
+2025-01-02 13:38:43,180 - INFO - Skipping DividendID=56 as factor is 1.0
+2025-01-02 13:38:43,182 - INFO - Processing DividendID=57 (StockCode=005250, Year=2020)
+2025-01-02 13:38:43,430 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:43,529 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:43,529 - INFO - Calculated factor=1.0000 for DividendID=57
+2025-01-02 13:38:43,530 - INFO - Skipping DividendID=57 as factor is 1.0
+2025-01-02 13:38:43,531 - INFO - Processing DividendID=58 (StockCode=005250, Year=2021)
+2025-01-02 13:38:43,830 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:43,923 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:43,923 - INFO - Calculated factor=1.0000 for DividendID=58
+2025-01-02 13:38:43,924 - INFO - Skipping DividendID=58 as factor is 1.0
+2025-01-02 13:38:43,924 - INFO - Processing DividendID=59 (StockCode=005250, Year=2022)
+2025-01-02 13:38:44,201 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:44,293 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:44,293 - INFO - Calculated factor=1.0000 for DividendID=59
+2025-01-02 13:38:44,294 - INFO - Skipping DividendID=59 as factor is 1.0
+2025-01-02 13:38:44,295 - INFO - Processing DividendID=60 (StockCode=005250, Year=2023)
+2025-01-02 13:38:44,543 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:44,642 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:44,644 - INFO - Calculated factor=1.0000 for DividendID=60
+2025-01-02 13:38:44,647 - INFO - Skipping DividendID=60 as factor is 1.0
+2025-01-02 13:38:44,649 - INFO - Processing DividendID=61 (StockCode=000990, Year=2019)
+2025-01-02 13:38:44,945 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:45,047 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:45,048 - INFO - Calculated factor=1.00000 for DividendID=61
+2025-01-02 13:38:45,049 - INFO - Skipping DividendID=61 as factor is 1.0
+2025-01-02 13:38:45,050 - INFO - Processing DividendID=62 (StockCode=000990, Year=2020)
+2025-01-02 13:38:45,298 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:45,394 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:45,394 - INFO - Calculated factor=1.00000 for DividendID=62
+2025-01-02 13:38:45,395 - INFO - Skipping DividendID=62 as factor is 1.0
+2025-01-02 13:38:45,396 - INFO - Processing DividendID=63 (StockCode=000990, Year=2021)
+2025-01-02 13:38:45,670 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:45,772 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:45,772 - INFO - Calculated factor=1.00000 for DividendID=63
+2025-01-02 13:38:45,773 - INFO - Skipping DividendID=63 as factor is 1.0
+2025-01-02 13:38:45,773 - INFO - Processing DividendID=64 (StockCode=000990, Year=2022)
+2025-01-02 13:38:46,087 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:46,206 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:46,206 - INFO - Calculated factor=1.00000 for DividendID=64
+2025-01-02 13:38:46,207 - INFO - Skipping DividendID=64 as factor is 1.0
+2025-01-02 13:38:46,207 - INFO - Processing DividendID=65 (StockCode=000990, Year=2023)
+2025-01-02 13:38:46,470 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:46,619 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:46,620 - INFO - Calculated factor=1.0000 for DividendID=65
+2025-01-02 13:38:46,622 - INFO - Skipping DividendID=65 as factor is 1.0
+2025-01-02 13:38:46,623 - INFO - Processing DividendID=66 (StockCode=030210, Year=2019)
+2025-01-02 13:38:46,965 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:47,125 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:47,126 - INFO - Calculated factor=1.0000 for DividendID=66
+2025-01-02 13:38:47,130 - INFO - Skipping DividendID=66 as factor is 1.0
+2025-01-02 13:38:47,133 - INFO - Processing DividendID=67 (StockCode=030210, Year=2020)
+2025-01-02 13:38:47,448 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:47,566 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:47,567 - INFO - Calculated factor=1.0000 for DividendID=67
+2025-01-02 13:38:47,570 - INFO - Skipping DividendID=67 as factor is 1.0
+2025-01-02 13:38:47,572 - INFO - Processing DividendID=68 (StockCode=030210, Year=2021)
+2025-01-02 13:38:47,865 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:47,968 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:47,969 - INFO - Calculated factor=1.00000 for DividendID=68
+2025-01-02 13:38:47,973 - INFO - Skipping DividendID=68 as factor is 1.0
+2025-01-02 13:38:47,975 - INFO - Processing DividendID=69 (StockCode=000210, Year=2019)
+2025-01-02 13:38:48,262 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:48,372 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:48,373 - INFO - Calculated factor=1.0000 for DividendID=69
+2025-01-02 13:38:48,376 - INFO - Skipping DividendID=69 as factor is 1.0
+2025-01-02 13:38:48,378 - INFO - Processing DividendID=70 (StockCode=030210, Year=2022)
+2025-01-02 13:38:48,655 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:48,808 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:48,809 - INFO - Calculated factor=1.00000 for DividendID=70
+2025-01-02 13:38:48,812 - INFO - Skipping DividendID=70 as factor is 1.0
+2025-01-02 13:38:48,814 - INFO - Processing DividendID=71 (StockCode=000210, Year=2020)
+2025-01-02 13:38:49,268 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:49,269 - INFO - Calculated factor=1.0000 for DividendID=71
+2025-01-02 13:38:49,272 - INFO - Skipping DividendID=71 as factor is 1.0
+2025-01-02 13:38:49,275 - INFO - Processing DividendID=72 (StockCode=030210, Year=2023)
+2025-01-02 13:38:49,557 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:49,659 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:49,660 - INFO - Calculated factor=1.0000000 for DividendID=72
+2025-01-02 13:38:49,663 - INFO - Skipping DividendID=72 as factor is 1.0
+2025-01-02 13:38:49,665 - INFO - Processing DividendID=73 (StockCode=000210, Year=2021)
+2025-01-02 13:38:49,966 - WARNING - dvRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:50,081 - WARNING - mgRs: status=013 msg=조회된 데이타가 없습니다.
+2025-01-02 13:38:50,082 - INFO - Calculated factor=1.000000 for DividendID=73
+2025-01-02 13:38:50,085 - INFO - Skipping DividendID=73 as factor is 1.0
+2025-01-02 13:38:50,087 - INFO - Processing DividendID=74 (StockCode=000210, Year=2022)

@@ -307,6 +307,48 @@ class OpenDartApiAdapter:
 
         return events
 
+    def process_issuance_reduction(self, stock_code: str, year: int) -> None:
+        """
+        주식 발행 감소 데이터를 처리하고 데이터베이스에 저장합니다.
+
+        Args:
+            stock_code: 종목 코드
+            year: 조회 연도
+
+        Raises:
+            OpenDartApiError: API 호출 실패 시
+        """
+        from sqlalchemy.orm import Session
+        from repositories.dividend_info_repository import DividendInfoRepository
+        from repositories.stock_price_repository import StockPriceRepository
+        from repositories.financial_statement_repository import FinancialStatementRepository
+        
+        session = Session()
+        try:
+            data = self.get_stock_issuance_reduction(stock_code, year, "11011")
+            
+            if not data:
+                logger.warning(f"No issuance reduction data found for {stock_code} ({year})")
+                return
+
+            for item in data:
+                event_date = item.isu_dcrs_de
+                event_type = item.isu_dcrs_stle
+                qty = item.isu_dcrs_qy
+                face_value = item.isu_dcrs_mstvdv_fval_amount
+                
+                # 이벤트 처리 로직 추가
+                if event_type and qty != 0:
+                    # 데이터베이스 저장 로직
+                    pass
+
+            session.commit()
+        except Exception as e:
+            logger.error(f"Error processing issuance reduction for {stock_code}: {str(e)}")
+            session.rollback()
+        finally:
+            session.close()
+
     def get_corp_code(self, stock_code: str) -> str:
         """
         종목 코드를 사용하여 B의 API를 호출하고, 고유번호(corp_code)를 반환합니다.

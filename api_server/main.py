@@ -12,6 +12,7 @@ from repositories.financial_statement_repository import FinancialStatementReposi
 from repositories.stock_price_repository import StockPriceRepository
 from config.schema import Stock, DividendInfo, StockIssuanceReduction
 import logging
+from datetime import datetime
 
 # 로깅 설정
 logging.basicConfig(level=logging.DEBUG)
@@ -91,18 +92,19 @@ class ScreeningResponse(BaseModel):
     criteria: dict
     timestamp: str
 
-@app.get("/api/v1/screen", response_model=ScreeningResponse)
+@app.get("/api/v1/screen")
 async def screen_stocks(
-    min_dividend: float = Query(0, description="최소 배당금"),
-    min_yield: float = Query(0.0, description="최소 배당률"),
-    min_count: int = Query(3, description="최소 배당 횟수"),
-    years: int = Query(5, description="고려할 연도 수"),
-    min_consecutive_years: Optional[int] = Query(None, description="최소 연속 배당 연도 수"),
-    min_dividend_growth: Optional[float] = Query(None, description="최소 배당 성장률")
+    min_yield: float = Query(0.0, description="최소 배당수익률 (%)"),
+    min_count: int = Query(1, description="최소 배당 횟수"),
+    years: int = Query(5, description="조회할 연도 수"),
+    consecutive_years: int = Query(0, description="최소 연속 배당 연도"),
+    min_dividend: float = Query(0.0, description="최소 배당금"),
+    limit: int = Query(100, description="결과 제한 수"),
+    market_cap: Optional[float] = Query(None, description="최소 시가총액 (억원)"),
+    avoid_div_cut: Optional[bool] = Query(False, description="배당감소 제외"),
+    sector: Optional[str] = Query(None, description="업종")
 ):
-    """
-    배당 스크리닝 조건에 맞는 종목들을 조회합니다.
-    """
+    """배당주 스크리닝 API"""
     db = SessionLocal()
     try:
         # Repository 초기화
@@ -111,57 +113,56 @@ async def screen_stocks(
         stock_price_repo = StockPriceRepository(db)
         
         # UseCase 초기화
-        use_case = DividendScreeningUseCase(dividend_repo, financial_repo, stock_price_repo, db)
+        use_case = DividendScreeningUseCase(
+            dividend_repo=dividend_repo,
+            financial_repo=financial_repo,
+            stock_price_repo=stock_price_repo,
+            session=db
+        )
         
-        # 모든 종목 코드 가져오기
-        stock_codes = [row[0] for row in db.execute(text("SELECT code FROM stocks")).fetchall()]
-        
-        # 스크리닝 조건 설정
+        # 스크리닝 기준 설정
         criteria = ScreeningCriteria(
             min_dividend=min_dividend,
             min_yield=min_yield,
             min_dividend_count=min_count,
             years_to_consider=years,
-            min_consecutive_years=min_consecutive_years,
-            min_dividend_growth=min_dividend_growth
+            min_consecutive_years=consecutive_years,
+            avoid_div_cut=avoid_div_cut
         )
+        
+        # 종목 코드 조회 쿼리 개선
+        query = text("""
+            SELECT DISTINCT s.code 
+            FROM stocks s
+            LEFT JOIN market_cap m ON s.id = m.stock_id
+            WHERE 1=1
+            AND (:market_cap IS NULL OR m.market_cap >= :market_cap)
+            AND (:sector IS NULL OR s.sector = :sector)
+            AND s.corp_code IS NOT NULL
+        """)
+        
+        stock_codes = [row[0] for row in db.execute(
+            query, 
+            {
+                "market_cap": market_cap * 100000000 if market_cap else None,
+                "sector": sector
+            }
+        ).fetchall()]
+        
+        if not stock_codes:
+            return {
+                "status": "success",
+                "data": [],
+                "message": "No stocks found matching the criteria",
+                "criteria": criteria.__dict__,
+                "timestamp": datetime.now().isoformat()
+            }
         
         # 스크리닝 실행
-        result = use_case.screen_stocks(stock_codes, criteria)
+        result = use_case.screen_stocks(stock_codes[:limit], criteria)
         
-        # 가장 최근 거래일 가져오기
-        latest_date = stock_price_repo.get_latest_trade_date()
+        return result
         
-        # 최근 거래일의 종가 정보 가져오기
-        latest_prices = stock_price_repo.get_prices_by_date(latest_date)
-        
-        for stock in result["included"]:
-            if "stock_code" not in stock:
-                logger.error(f"Skipping stock due to missing stock_code: {stock}")
-                continue
-                
-            try:
-                stock_code = stock["stock_code"]
-                stock_id = _get_stock_id(db, stock_code)
-                stock["latest_close_price"] = latest_prices.get(stock_id)
-            except KeyError as e:
-                logger.error(f"Error processing stock: {str(e)}")
-                continue
-                continue
-        
-        return ScreeningResponse(
-            status="success",
-            data=result["included"],
-            criteria={
-                "min_dividend": min_dividend,
-                "min_yield": min_yield,
-                "min_count": min_count,
-                "years": years,
-                "min_consecutive_years": min_consecutive_years,
-                "min_dividend_growth": min_dividend_growth
-            },
-            timestamp=result["timestamp"]
-        )
     except Exception as e:
         logger.error(f"Error during screening: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

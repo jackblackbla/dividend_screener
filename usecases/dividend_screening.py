@@ -23,6 +23,7 @@ class ScreeningCriteria:
     years_to_consider: int  # 고려할 연도 수
     min_consecutive_years: Optional[int] = None  # 연속 배당 연도 수
     min_dividend_growth: Optional[float] = None  # 최소 배당 성장률
+    avoid_div_cut: Optional[bool] = False  # 배당감소 제외
 
 @dataclass
 class ScreeningResult:
@@ -48,23 +49,24 @@ class DividendScreeningUseCase:
         self.session = session
 
     def screen_stocks(self, stock_codes: List[str], criteria: ScreeningCriteria) -> Dict:
+        """주식 스크리닝을 수행합니다."""
         if not stock_codes:
             raise DividendScreeningError("Stock codes list cannot be empty")
 
         if criteria.years_to_consider <= 0:
             raise DividendScreeningError("Years to consider must be greater than 0")
 
-        # 무상조정계수 적용
-        issuanceUseCase = StockIssuanceReductionUseCase(self.dividend_repo, self.session)
-        for code in stock_codes:
-            issuanceUseCase.adjust_dividend_by_factor(code, start_year=2015, end_year=2023)
+        # 무상조정계수 적용 부분 제거 (DB에서만 조회하도록)
+        # issuanceUseCase = StockIssuanceReductionUseCase(self.dividend_repo, self.session)
+        # for code in stock_codes:
+        #     issuanceUseCase.adjust_dividend_by_factor(code, start_year=2015, end_year=2023)
 
         included = []
         excluded = []
         
         for stock_code in stock_codes:
             try:
-                # 배당 정보 조회
+                # 배당 정보 조회 (이미 DB에 저장된 정보 사용)
                 dividend_info = self.dividend_repo.get_dividend_info(
                     stock_code, 
                     criteria.years_to_consider
@@ -240,10 +242,6 @@ class StockIssuanceReductionUseCase:
                  session):
         self.dividend_repo = dividend_repo
         self.session = session
-        # OpenDARTReader 초기화
-        from config import DART_API_KEY
-        import OpenDartReader
-        self._dart = OpenDartReader(DART_API_KEY)
 
     def process_issuance_reduction(self, stock_code: str, year: int, reprt_code: str):
         """증자(감자) 현황 데이터를 처리합니다."""
