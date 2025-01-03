@@ -76,6 +76,21 @@ def insert_csv_to_db(csv_file, trade_date):
                         "market_cap": market_cap
                     }
                 )
+
+                # stock_prices 테이블 upsert
+                session.execute(
+                    text("""
+                        INSERT INTO stock_prices (stock_id, trade_date, close_price)
+                        VALUES (:stock_id, :date, :close_price)
+                        ON DUPLICATE KEY UPDATE
+                            close_price = VALUES(close_price)
+                    """),
+                    {
+                        "stock_id": stock_id,
+                        "date": trade_date,
+                        "close_price": close_price
+                    }
+                )
         
         session.commit()
         logging.info(f"데이터베이스에 성공적으로 저장되었습니다: {csv_file}")

@@ -30,7 +30,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # 데이터베이스 연결 설정
-DATABASE_URL = "mysql+pymysql://root@localhost:3306/dividend?charset=utf8mb4"
+DATABASE_URL = "mysql+pymysql://root@localhost:3306/dividend_v2?charset=utf8mb4"
 engine = create_engine(
     DATABASE_URL,
     pool_size=15,
@@ -51,7 +51,7 @@ Base = declarative_base()
 # 모델 정의
 class Stock(Base):
     __tablename__ = 'stocks'
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    stock_id = Column(Integer, primary_key=True, autoincrement=True)
     code = Column(String(20), unique=True)
     corp_code = Column(String(8), nullable=True)
     name = Column(String(100), nullable=True)
@@ -59,15 +59,18 @@ class Stock(Base):
 
 class DividendInfo(Base):
     __tablename__ = 'dividend_info'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    stock_id = Column(Integer, ForeignKey('stocks.id'), nullable=False)
-    code = Column(String(20), nullable=False)
+    dividend_id = Column(Integer, primary_key=True, autoincrement=True)
+    stock_id = Column(Integer, ForeignKey('stocks.stock_id'), nullable=False)
     year = Column(Integer, nullable=False)
-    reprt_code = Column(String(5), nullable=False)
     dividend_per_share = Column(Numeric(20, 2), nullable=True)
     adjusted_ratio = Column(Numeric(10, 4), nullable=True)
     adjusted_dividend_per_share = Column(Numeric(20, 2), nullable=True)
+    payout_ratio = Column(Numeric(5, 2), nullable=True)
+    has_dividend_cut = Column(Integer, nullable=False, default=0)
     ex_dividend_date = Column(Date, nullable=True)
+    consecutive_years = Column(Integer, default=0)
+    dividend_growth_3y = Column(Numeric(5, 2), nullable=True)
+    dividend_growth_5y = Column(Numeric(5, 2), nullable=True)
     stock = relationship("Stock", back_populates="dividend_info")
 
 class StockPrice(Base):
@@ -331,10 +334,84 @@ def parse_event_factor(ev_type, data):
     return max(factor, Decimal('0.0001'))
 
 # 메인 처리 로직
+def calculate_advanced_metrics(session, stock, year):
+    """고급 지표 계산"""
+    try:
+        # 최근 5년 데이터 조회
+        years = range(year - 4, year + 1)
+        dps_map = {}
+        
+        # 연도별 DPS 조회
+        rows = session.query(DividendInfo.year, DividendInfo.dividend_per_share)\
+            .filter(DividendInfo.stock_id == stock.stock_id)\
+            .filter(DividendInfo.year.in_(years))\
+            .all()
+            
+        for row in rows:
+            dps_map[row.year] = row.dividend_per_share or 0
+
+        # 연속배당연도 계산
+        consecutive = 0
+        for y in sorted(years):
+            dps_val = dps_map.get(y, 0)
+            if dps_val > 0:
+                consecutive += 1
+            else:
+                consecutive = 0
+                
+            # 연도별 연속배당연도 업데이트
+            session.query(DividendInfo)\
+                .filter(DividendInfo.stock_id == stock.stock_id)\
+                .filter(DividendInfo.year == y)\
+                .update({"consecutive_years": consecutive})
+
+        # 배당성장률 계산 (3년, 5년)
+        latest_dps = dps_map.get(year, 0)
+        growth_3y = 0
+        growth_5y = 0
+        
+        if year - 3 in dps_map and dps_map[year - 3] > 0 and latest_dps > 0:
+            growth_3y = float((latest_dps / dps_map[year - 3]) ** Decimal(1/3) - 1)
+            growth_3y *= 100
+             
+        if year - 5 in dps_map and dps_map[year - 5] > 0 and latest_dps > 0:
+            logger.info(f"Calculating 5y growth for {stock.code}: latest={latest_dps}, 5y_ago={dps_map[year - 5]}")
+            growth_5y = float((latest_dps / dps_map[year - 5]) ** Decimal(1/5) - 1)
+            growth_5y *= 100
+            logger.info(f"Calculated 5y growth: {growth_5y}%")
+            
+        # 최신 연도에 배당성장률 저장
+        session.query(DividendInfo)\
+            .filter(DividendInfo.stock_id == stock.stock_id)\
+            .filter(DividendInfo.year == year)\
+            .update({
+                "dividend_growth_3y": float(growth_3y),
+                "dividend_growth_5y": float(growth_5y)
+            })
+            
+        session.commit()
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error calculating advanced metrics for {stock.code}: {str(e)}")
+        session.rollback()
+        return False
+
 def process_dividend_data(stock, data, year):
     """배당 데이터 처리"""
     session = Session()
     try:
+        # 이미 데이터가 있는지 확인
+        existing = session.query(DividendInfo).filter_by(
+            stock_id=stock.stock_id,
+            year=year
+        ).first()
+        
+        # 이미 데이터가 있고, 배당금 정보가 있다면 API 요청 생략
+        if existing and existing.dividend_per_share is not None:
+            logger.info(f"Skipping API call for {stock.code} ({year}), data already exists")
+            return
+
         # 데이터 타입 검사 강화
         if not isinstance(data, dict):
             logger.warning(f"Invalid data format for {stock.corp_code} ({year}): expected dict, got {type(data)}")
@@ -350,7 +427,7 @@ def process_dividend_data(stock, data, year):
             return
 
         latest_price = session.query(StockPrice).filter(
-            StockPrice.stock_id == stock.id
+            StockPrice.stock_id == stock.stock_id
         ).order_by(StockPrice.trade_date.desc()).first()
 
         if not latest_price:
@@ -359,6 +436,8 @@ def process_dividend_data(stock, data, year):
 
         dividend_info = {
             'dividend_per_share': Decimal('0'),
+            'payout_ratio': None,
+            'has_dividend_cut': 0,
             'ex_dividend_date': None
         }
 
@@ -378,35 +457,60 @@ def process_dividend_data(stock, data, year):
                 except (ValueError, TypeError, AttributeError) as e:
                     logger.warning(f"Error parsing dividend value for {stock.code}: {str(e)}")
                     continue
+            elif '(연결)현금배당성향(%)' in se:
+                try:
+                    dividend_info['payout_ratio'] = Decimal(thstrm.replace(',', '').replace('-', '0'))
+                except (ValueError, TypeError, AttributeError) as e:
+                    logger.warning(f"Error parsing payout ratio for {stock.code}: {str(e)}")
+                    continue
 
-        if dividend_info['dividend_per_share'] > 0 and dividend_info['ex_dividend_date']:
+        if dividend_info['dividend_per_share'] is not None and dividend_info['ex_dividend_date']:
             factor = gather_events_and_compute_factor(stock, year)
             
             existing = session.query(DividendInfo).filter_by(
-                stock_id=stock.id,
-                year=year,
-                reprt_code="11011"
+                stock_id=stock.stock_id,
+                year=year
             ).first()
+
+            # 전년도 배당금 조회 및 감배당 여부 계산
+            prev_year = year - 1
+            prev_dividend = session.query(DividendInfo).filter_by(
+                stock_id=stock.stock_id,
+                year=prev_year
+            ).first()
+            
+            if prev_dividend and prev_dividend.dividend_per_share is not None:
+                if dividend_info['dividend_per_share'] < prev_dividend.dividend_per_share:
+                    dividend_info['has_dividend_cut'] = 1
+                else:
+                    dividend_info['has_dividend_cut'] = 0
 
             if existing:
                 existing.dividend_per_share = float(dividend_info['dividend_per_share'])
                 existing.adjusted_ratio = float(factor)
                 existing.adjusted_dividend_per_share = float(dividend_info['dividend_per_share'] * factor)
                 existing.ex_dividend_date = dividend_info['ex_dividend_date']
+                existing.payout_ratio = float(dividend_info['payout_ratio']) if dividend_info['payout_ratio'] else None
+                existing.has_dividend_cut = dividend_info['has_dividend_cut']
             else:
                 dividend = DividendInfo(
-                    stock_id=stock.id,
-                    code=stock.code,
+                    stock_id=stock.stock_id,
                     year=year,
-                    reprt_code="11011",
                     dividend_per_share=float(dividend_info['dividend_per_share']),
                     adjusted_ratio=float(factor),
                     adjusted_dividend_per_share=float(dividend_info['dividend_per_share'] * factor),
-                    ex_dividend_date=dividend_info['ex_dividend_date']
+                    ex_dividend_date=dividend_info['ex_dividend_date'],
+                    payout_ratio=float(dividend_info['payout_ratio']) if dividend_info['payout_ratio'] else None,
+                    has_dividend_cut=dividend_info['has_dividend_cut']
                 )
                 session.add(dividend)
 
             logger.info(f"Processed dividend for {stock.code} ({stock.corp_code}): {dividend_info['dividend_per_share']}원")
+
+            # 고급 지표 계산
+            logger.info(f"Calculating advanced metrics for {stock.code} ({year})")
+            result = calculate_advanced_metrics(session, stock, year)
+            logger.info(f"Advanced metrics calculation result: {result}")
 
         session.commit()
     except Exception as e:

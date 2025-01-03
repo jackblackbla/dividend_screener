@@ -14,7 +14,7 @@ class DividendInfoRepository:
 
         for dividend in dividends:
             div = DividendInfo(
-                stock_id=stock.id,
+                stock_id=stock.stock_id,
                 year=dividend.year,
                 dividend_per_share=dividend.dividend_per_share,
                 dividend_yield=dividend.dividend_yield,
@@ -40,7 +40,7 @@ class DividendInfoRepository:
             raise ValueError(f"Stock with code {stock_code} not found")
 
         dividends = self.session.query(DividendInfo)\
-            .filter_by(stock_id=stock.id)\
+            .filter_by(stock_id=stock.stock_id)\
             .order_by(DividendInfo.year.desc())\
             .limit(years)\
             .all()
@@ -103,7 +103,7 @@ class DividendInfoRepository:
         
         # 모든 배당 정보에 조정계수 적용
         dividends = self.session.query(DividendInfo)\
-            .filter_by(stock_id=stock.id)\
+            .filter_by(stock_id=stock.stock_id)\
             .all()
             
         for dividend in dividends:
@@ -128,7 +128,7 @@ class DividendInfoRepository:
             DividendInfo.year,
             DividendInfo.dividend_per_share,
             DividendInfo.dividend_yield
-        ).join(Stock, Stock.id == DividendInfo.stock_id)\
+        ).join(Stock, Stock.stock_id == DividendInfo.stock_id)\
          .filter(DividendInfo.year == latest_date)\
          .filter(DividendInfo.dividend_yield >= min_yield)\
          .all()
@@ -148,7 +148,7 @@ class DividendInfoRepository:
 
             if not existing:
                 new_issuance = StockIssuanceReduction(
-                    stock_id=stock.id,
+                    stock_id=stock.stock_id,
                     corp_code=issuance.corp_code,
                     rcept_no=issuance.rcept_no,
                     isu_dcrs_de=issuance.isu_dcrs_de,

@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import ScreenerForm from '../components/ScreenerForm';
 import ScreenerResult from '../components/ScreenerResult';
+import { fetchScreener } from '../services/api';
 
 function ScreenerPage() {
   const [results, setResults] = useState<any[]>([]);
 
-  const handleSearch = (formValues: any) => {
-    // TODO: call /api/screener with formValues
-    // setResults(responseData);
+  const handleSearch = async (formValues: any) => {
+    try {
+      const data = await fetchScreener(formValues);
+      setResults(data);
+    } catch (error) {
+      console.error('검색 실패:', error);
+      setResults([]);
+    }
   };
 
   return (

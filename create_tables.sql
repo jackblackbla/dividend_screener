@@ -1,8 +1,10 @@
 CREATE TABLE dividend_v2.stocks (
   stock_id INT AUTO_INCREMENT PRIMARY KEY,
   code VARCHAR(20) NOT NULL UNIQUE,
+  corp_code VARCHAR(8) UNIQUE,
   name VARCHAR(100) NOT NULL,
   sector VARCHAR(50),
+  exchange VARCHAR(10),
   market_cap BIGINT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -55,5 +57,21 @@ CREATE TABLE dividend_v2.drip_scenario (
   dividend_reinvestment BOOLEAN DEFAULT TRUE,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(user_id),
+  FOREIGN KEY (stock_id) REFERENCES stocks(stock_id)
+);
+
+CREATE TABLE dividend_v2.stock_prices (
+  stock_price_id INT AUTO_INCREMENT PRIMARY KEY,
+  stock_id INT NOT NULL,
+  trade_date DATE NOT NULL,
+  close_price DECIMAL(12,2) NOT NULL,
+  FOREIGN KEY (stock_id) REFERENCES stocks(stock_id)
+);
+
+CREATE TABLE dividend_v2.market (
+  market_id INT AUTO_INCREMENT PRIMARY KEY,
+  stock_id INT NOT NULL,
+  market_cap BIGINT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (stock_id) REFERENCES stocks(stock_id)
 );

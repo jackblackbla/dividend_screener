@@ -154,14 +154,15 @@ class DividendScreeningUseCase:
                 SELECT MAX(trade_date) AS latest_date
                 FROM stock_prices
             )
-            SELECT s.code AS stock_code,
+            SELECT s.stock_id, s.code AS stock_code, s.corp_code, s.name,
+                   s.sector, s.exchange,
                    d.year,
                    d.dividend_per_share,
                    p.close_price,
                    (d.dividend_per_share / p.close_price * 100) AS dividend_yield
               FROM stocks s
-              JOIN dividend_info d ON s.id = d.stock_id
-              JOIN stock_prices p ON p.stock_id = s.id
+              JOIN dividend_info d ON s.stock_id = d.stock_id
+              JOIN stock_prices p ON p.stock_id = s.stock_id
               JOIN latest l ON p.trade_date = l.latest_date
              WHERE (d.dividend_per_share / p.close_price * 100) >= :min_yield
         """)
@@ -225,10 +226,10 @@ class DividendScreeningUseCase:
             raise NoPriceDataError("No trade date available")
             
         prices = self.stock_price_repo.get_prices_by_date(latest_date)
-        if stock.id not in prices:
+        if stock.stock_id not in prices:
             raise NoPriceDataError(f"No price data available for {stock_code} on {latest_date}")
             
-        return prices[stock.id]
+        return prices[stock.stock_id]
 
     def _calculate_dividend_yield(self, dividend_per_share: float, close_price: float) -> float:
         """배당률을 계산합니다."""

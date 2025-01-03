@@ -132,6 +132,8 @@ async def screen_stocks(
     """
     db = SessionLocal()
     try:
+        logger.info(f"Starting screening with criteria: {locals()}")
+        
         # Repository 초기화
         dividend_repo = DividendInfoRepository(db)
         financial_repo = FinancialStatementRepository(db)
@@ -158,27 +160,29 @@ async def screen_stocks(
         
         # 종목 코드 조회 쿼리 (market_cap, sector 등)
         query = text("""
-            SELECT DISTINCT s.code 
-            FROM stocks s
-            LEFT JOIN market_cap m ON s.id = m.stock_id
+            SELECT DISTINCT s.code
+            FROM dividend_v2.stocks s
+            LEFT JOIN dividend_v2.market m ON s.stock_id = m.stock_id
             WHERE 1=1
             AND (:market_cap IS NULL OR m.market_cap >= :market_cap)
             AND (:sector IS NULL OR s.sector = :sector)
-            AND s.corp_code IS NOT NULL
         """)
         
-        # market_cap은 억원 단위 가정 -> 실제 DB는 원단위?
-        market_cap_raw = market_cap * 100000000 if market_cap else None
+        # market_cap은 원 단위로 저장되어 있음
+        market_cap_raw = market_cap if market_cap else None
+        logger.debug(f"market_cap input: {market_cap} -> market_cap_raw: {market_cap_raw}")
 
-        stock_codes = [
-            row[0] for row in db.execute(
-                query, 
-                {
-                    "market_cap": market_cap_raw,
-                    "sector": sector
-                }
-            ).fetchall()
-        ]
+        query_result = db.execute(
+            query,
+            {
+                "market_cap": market_cap_raw,
+                "sector": sector
+            }
+        ).fetchall()
+        
+        logger.debug(f"DB query result: {query_result}")
+        
+        stock_codes = [row[0] for row in query_result]
         
         if not stock_codes:
             return ScreeningResponse(
@@ -221,6 +225,9 @@ async def screen_stocks(
                     )
                 )
 
+        logger.info(f"Screening completed. Found {len(included_list)} matching stocks")
+        logger.debug(f"Screening details: {result_dict.get('criteria', {})}")
+        
         return ScreeningResponse(
             status="success",
             data=included_list,
@@ -231,6 +238,7 @@ async def screen_stocks(
         
     except Exception as e:
         logger.error(f"Error during screening: {str(e)}", exc_info=True)
+        logger.error(f"Screening criteria at error: {criteria.__dict__}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
@@ -270,7 +278,7 @@ def _get_stock_id(db, stock_code: str) -> int:
     """주식 코드를 사용하여 주식 ID를 조회합니다."""
     stock = db.query(Stock).filter_by(code=stock_code).first()
     if stock:
-        return stock.id
+        return stock.stock_id
     raise ValueError(f"Stock with code {stock_code} not found")
 
 if __name__ == "__main__":

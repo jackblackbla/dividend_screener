@@ -1,5 +1,10 @@
 START TRANSACTION;
 
+-- dividend_info 테이블 컬럼 추가
+ALTER TABLE dividend_v2.dividend_info
+ADD COLUMN payout_ratio DECIMAL(5,2),
+ADD COLUMN has_dividend_cut TINYINT(1) DEFAULT 0;
+
 -- dividend_info 테이블로 데이터 이관
 INSERT INTO dividend_v2.dividend_info (stock_id, year, dividend_per_share, adjusted_dividend_per_share, payout_ratio, has_dividend_cut)
 SELECT

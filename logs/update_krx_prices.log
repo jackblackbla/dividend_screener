@@ -134,3 +134,15 @@
 2025-01-02 20:48:53,221 - INFO - OTP 발급 성공: R2tITXoVajRekYQz/uq/8B/RYX8qxU8btsGyv4GaG4YRtSksuLS7Bnxpl86F7dAOkunw9BBwugQaSjGAcH15eSPZwT3eA68BJpxJVksRYdb+lNE/mS3HSeH9JSPc/lHYZqIo4cIzoURnTI8+MmkJ4v/rk8yudrOQ53ef0cNipdpCT2QuimcLoNhc1Lfcxcp2zXt/wiFT3lY4zZLV84P+nFYo9mrWvGCVTr7yVbjg2wtc9glyj0xDQ2lZrfrchZWN
 2025-01-02 20:48:53,758 - INFO - 파일 저장 성공: data/krx_KSQ_20250102.csv
 2025-01-02 20:48:54,374 - INFO - 데이터베이스에 성공적으로 저장되었습니다: data/krx_KSQ_20250102.csv
+2025-01-03 17:19:26,891 - INFO - OTP 발급 성공: R2tITXoVajRekYQz/uq/8OFG5DFwB3ndUCMcVfMnXGsRtSksuLS7Bnxpl86F7dAOkunw9BBwugQaSjGAcH15ebKxz+U80ZfQKZgqWeHSfq4tBgM+EFJCxYg3zco1gIgRZqIo4cIzoURnTI8+MmkJ4v/rk8yudrOQ53ef0cNipdpCT2QuimcLoNhc1Lfcxcp2zXt/wiFT3lY4zZLV84P+nFYo9mrWvGCVTr7yVbjg2wtc9glyj0xDQ2lZrfrchZWN
+2025-01-03 17:19:27,183 - INFO - 파일 저장 성공: data/krx_STK_20250103.csv
+2025-01-03 17:19:27,586 - INFO - 데이터베이스에 성공적으로 저장되었습니다: data/krx_STK_20250103.csv
+2025-01-03 17:19:27,644 - INFO - OTP 발급 성공: R2tITXoVajRekYQz/uq/8G1wjS63YDSNizIrMSEM11wRtSksuLS7Bnxpl86F7dAOkunw9BBwugQaSjGAcH15ebKxz+U80ZfQKZgqWeHSfq7+lNE/mS3HSeH9JSPc/lHYZqIo4cIzoURnTI8+MmkJ4v/rk8yudrOQ53ef0cNipdpCT2QuimcLoNhc1Lfcxcp2zXt/wiFT3lY4zZLV84P+nFYo9mrWvGCVTr7yVbjg2wtc9glyj0xDQ2lZrfrchZWN
+2025-01-03 17:19:27,967 - INFO - 파일 저장 성공: data/krx_KSQ_20250103.csv
+2025-01-03 17:19:28,583 - INFO - 데이터베이스에 성공적으로 저장되었습니다: data/krx_KSQ_20250103.csv
+2025-01-03 17:34:21,251 - INFO - OTP 발급 성공: R2tITXoVajRekYQz/uq/8L508cYK9dbhFa8VkX7CiLoRtSksuLS7Bnxpl86F7dAOkunw9BBwugQaSjGAcH15ebKxz+U80ZfQKZgqWeHSfq4tBgM+EFJCxYg3zco1gIgRZqIo4cIzoURnTI8+MmkJ4v/rk8yudrOQ53ef0cNipdpCT2QuimcLoNhc1Lfcxcp2zXt/wiFT3lY4zZLV84P+nFYo9mrWvGCVTr7yVbjg2wtc9glyj0xDQ2lZrfrchZWN
+2025-01-03 17:34:21,521 - INFO - 파일 저장 성공: data/krx_STK_20250103.csv
+2025-01-03 17:34:22,015 - INFO - 데이터베이스에 성공적으로 저장되었습니다: data/krx_STK_20250103.csv
+2025-01-03 17:34:22,052 - INFO - OTP 발급 성공: R2tITXoVajRekYQz/uq/8JVy/S6BpiraK9mHLROg+1MRtSksuLS7Bnxpl86F7dAOkunw9BBwugQaSjGAcH15ebKxz+U80ZfQKZgqWeHSfq7+lNE/mS3HSeH9JSPc/lHYZqIo4cIzoURnTI8+MmkJ4v/rk8yudrOQ53ef0cNipdpCT2QuimcLoNhc1Lfcxcp2zXt/wiFT3lY4zZLV84P+nFYo9mrWvGCVTr7yVbjg2wtc9glyj0xDQ2lZrfrchZWN
+2025-01-03 17:34:22,457 - INFO - 파일 저장 성공: data/krx_KSQ_20250103.csv
+2025-01-03 17:34:23,485 - INFO - 데이터베이스에 성공적으로 저장되었습니다: data/krx_KSQ_20250103.csv
